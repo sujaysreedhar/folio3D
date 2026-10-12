@@ -4,7 +4,7 @@
 - [x] Milestone 2: curved 3D renderer
 - [x] Milestone 3: providers and render scheduler
 - [x] Milestone 4: reader interaction and fallback
-- [ ] Milestone 5: distribution and demo
+- [x] Milestone 5: distribution and demo
 - [ ] Milestone 6: release verification
 
 ## Pre-flight
@@ -32,3 +32,9 @@ Scheduler tests RED2 then GREEN15/15 suite. Chrome provider tests3/3: text/scann
 ## Milestone 4
 
 Reader test RED against unimplemented API, then Chrome11/11 GREEN. Covered navigation/validation/zoom, independent focused keyboards, layout, modal Escape/focus, reduced motion, latest queued target, partial/complete/cancelled drags, context loss, resize mid-turn, destroy during load and50 flat mount/destroy cycles. Unit15/15, typecheck and production build pass. Core bundle654kB uncompressed plus lazy PDF chunks; image books do not load PDF chunks. Browser distribution/package testing is milestone5.
+
+## Milestone 5
+
+Typecheck/build/library and static demo succeed. Packed archive installed into an isolated local consumer (offline), then Vite built it. Chrome package5/5: nested plain modules default worker base, npm bundler explicit asset base, missing worker useful error, image-only no PDF fetches, local/sample PDFs, modal,390px no overflow. Desktop/mobile full screenshots inspected at artifacts/demo-*.png. Original MIT/license/notices and detailed API/hosting/lifecycle docs included. Browser licenses and font/decoder license files shipped unchanged.
+
+Ruling: pin Playwright1.63.0 to match all three browser engines already installed on this host — replaces1.64.0 test tooling and avoids several hundred MB of redundant downloads. Runtime dependency pins are unchanged; CI installs the matching pinned browsers. Cost if wrong: browser launch/protocol checks fail explicitly.

@@ -6,3 +6,6 @@ playwright-report/
 artifacts/
 .superpowers/
 *.tgz
+demo/public/lib/
+demo/public/LICENSE.txt
+demo/public/README.txt
