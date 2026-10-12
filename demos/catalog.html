@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Explore an original homeware catalog with section shortcuts and a 3D flipbook. A Folio3D demo."
+    />
+    <title>Form &amp; Field — Folio3D catalog demo</title>
+    <script type="module" crossorigin src="../assets/site-Dyo2vPrx.js"></script>
+    <script type="module" crossorigin src="../assets/reader-B7eAr3D8.js"></script>
+    <script type="module" crossorigin src="../assets/shared-C2bEWVov.js"></script>
+    <link rel="stylesheet" crossorigin href="../assets/site-CUmen87y.css">
+    <link rel="stylesheet" crossorigin href="../assets/reader-Cr7ROsaD.css">
+  </head>
+  <body data-publication="catalog">
+    <header class="site-nav">
+      <a class="wordmark" href="../index.html"
+        >folio<span>3D</span><span class="brand-leaf" aria-hidden="true">/</span></a
+      >
+      <nav aria-label="Demo navigation">
+        <a href="../index.html#demos">All demos</a>
+        <a href="./portfolio.html">Portfolio</a>
+        <a href="./bookshelf.html">Reading room</a>
+      </nav>
+    </header>
+    <main class="demo-main">
+      <section class="demo-intro">
+        <div>
+          <p class="eyebrow">Demo 01 / The product catalog</p>
+          <h1>Objects for<br />every day.</h1>
+        </div>
+        <p>
+          A slower browse through the Form &amp; Field collection. Turn a page, find a detail, make
+          yourself at home.
+        </p>
+      </section>
+      <section class="demo-layout" aria-label="Browse the collection">
+        <aside class="demo-sidebar">
+          <p class="eyebrow">Form &amp; Field / Collection 01</p>
+          <h2>The collection</h2>
+          <div
+            id="section-buttons"
+            class="section-buttons"
+            role="group"
+            aria-label="Catalog sections"
+          ></div>
+          <p id="project-note" class="project-note" aria-live="polite">Opening the collection…</p>
+          <p class="sample-note">An original sample collection. All objects are illustrations.</p>
+        </aside>
+        <div class="reader-panel">
+          <div class="reader-heading">
+            <span id="publication-status" role="status">Opening catalog…</span>
+            <button id="demo-lightbox" class="outline-button" disabled>Open lightbox</button>
+          </div>
+          <div id="demo-book" class="demo-book"></div>
+          <div class="reader-hint">
+            Drag an outer edge or use the arrows to turn the page.<button
+              id="retry"
+              class="outline-button"
+              hidden
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      </section>
+      <div class="demo-next">
+        <span>Your next chapter</span
+        ><a class="text-link" href="./portfolio.html">Explore the portfolio ↗</a>
+      </div>
+    </main>
+    <footer>
+      <a class="wordmark" href="../index.html">folio<span>3D</span></a>
+      <p>Original samples. Your ideas next.</p>
+      <a href="../README.txt">Documentation ↗</a>
+    </footer>
+  </body>
+</html>

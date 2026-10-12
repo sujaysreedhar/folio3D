@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" role="img" aria-labelledby="title desc">
+<title id="title">A thoughtful point of view.</title><desc id="desc">Spaces, objects and printed matter / 2026</desc>
+<rect width="600" height="800" fill="#e9ece2"/>
+<g color="#283e34"><path d="M42 88H558M42 714H558" fill="none" stroke="currentColor" stroke-opacity=".3"/></g>
+<g fill="#283e34" font-family="Arial,Helvetica,sans-serif">
+<text x="42" y="57" font-size="14" letter-spacing="2">STUDIO NORTH / SELECTED WORK</text>
+<text x="42" y="170" font-size="60" font-family="Georgia,serif">A thoughtful</text>
+<text x="42" y="235" font-size="60" font-family="Georgia,serif">point of view.</text>
+<text x="42" y="278" font-size="17" >Spaces, objects and printed matter / 2026</text>
+<text x="42" y="753" font-size="11" letter-spacing="1.4">FOLIO3D / ORIGINAL DEMO PUBLICATION</text>
+<text x="530" y="755" font-size="22" >01</text>
+</g><g transform="translate(42 300)">
+  <rect width="516" height="350" fill="#d5d9ca"/>
+  <path d="M0 250H516V350H0Z" fill="#b7b59f"/>
+  <path d="M280 35H465V245H280Z" fill="#f7f2d9"/>
+  <path d="M372 35V245M280 145H465" stroke="#697d68" stroke-width="7"/>
+  <path d="M0 350L210 250H516M210 0V250" stroke="#87947b" fill="none" stroke-width="2"/>
+  <rect x="40" y="190" width="210" height="65" rx="12" fill="#986d52"/>
+  <rect x="40" y="150" width="210" height="70" rx="22" fill="#ba9573"/>
+  <path d="M55 255V280M235 255V280" stroke="#354a3c" stroke-width="7"/>
+  <circle cx="410" cy="225" r="40" fill="#56785a"/>
+  <path d="M410 240V290" stroke="#354a3c" stroke-width="7"/>
+</g></svg>

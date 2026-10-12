@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="A small digital reading room. Open magazines, catalogs, portfolios or your own local PDF with Folio3D."
+    />
+    <title>The reading room — Folio3D bookshelf demo</title>
+    <script type="module" crossorigin src="../assets/bookshelf-BFjXWmTI.js"></script>
+    <link rel="modulepreload" crossorigin href="../assets/site-Dyo2vPrx.js">
+    <link rel="modulepreload" crossorigin href="../assets/reader-B7eAr3D8.js">
+    <link rel="stylesheet" crossorigin href="../assets/site-CUmen87y.css">
+    <link rel="stylesheet" crossorigin href="../assets/reader-Cr7ROsaD.css">
+  </head>
+  <body class="bookshelf-demo">
+    <header class="site-nav">
+      <a class="wordmark" href="../index.html"
+        >folio<span>3D</span><span class="brand-leaf" aria-hidden="true">/</span></a
+      >
+      <nav aria-label="Demo navigation">
+        <a href="../index.html#demos">All demos</a><a href="./catalog.html">Catalog</a
+        ><a href="./portfolio.html">Portfolio</a>
+      </nav>
+    </header>
+    <main class="demo-main">
+      <section class="demo-intro">
+        <div>
+          <p class="eyebrow">Demo 03 / The digital bookshelf</p>
+          <h1>A little room<br />for reading.</h1>
+        </div>
+        <p>
+          Three publications, a few different perspectives. Pick a cover and settle into a larger
+          reading view.
+        </p>
+      </section>
+      <section class="shelf-grid" aria-label="Publications">
+        <article class="shelf-item">
+          <div class="cover-stage magazine-cover">
+            <img
+              src="../samples/page-1.svg"
+              alt="Fieldnotes magazine cover: Small wonders"
+              width="600"
+              height="800"
+            />
+          </div>
+          <p class="eyebrow">01 / Magazine / PDF / 6 pages</p>
+          <h2>Fieldnotes</h2>
+          <p>Objects, ideas and a different point of view. The original Folio3D sample magazine.</p>
+          <button class="read-button" data-read="magazine" aria-label="Read Fieldnotes magazine">
+            Read magazine <span aria-hidden="true">↗</span>
+          </button>
+        </article>
+        <article class="shelf-item">
+          <div class="cover-stage catalog-cover">
+            <img
+              src="../samples/catalog/page-1.svg"
+              alt="Form &amp; Field catalog cover: Objects for every day"
+              width="600"
+              height="800"
+            />
+          </div>
+          <p class="eyebrow">02 / Catalog / Images / 6 pages</p>
+          <h2>Form &amp; Field</h2>
+          <p>Considered furniture and small objects. A collection for the everyday.</p>
+          <button
+            class="read-button"
+            data-read="catalog"
+            aria-label="Read Form &amp; Field catalog"
+          >
+            Read catalog <span aria-hidden="true">↗</span>
+          </button>
+        </article>
+        <article class="shelf-item">
+          <div class="cover-stage portfolio-cover">
+            <img
+              src="../samples/portfolio/page-1.svg"
+              alt="Studio North portfolio cover: A thoughtful point of view"
+              width="600"
+              height="800"
+            />
+          </div>
+          <p class="eyebrow">03 / Portfolio / Images / 6 pages</p>
+          <h2>Studio North</h2>
+          <p>A collection of quiet spaces, sculptural objects and thoughtful printed matter.</p>
+          <button
+            class="read-button"
+            data-read="portfolio"
+            aria-label="Read Studio North portfolio"
+          >
+            Read portfolio <span aria-hidden="true">↗</span>
+          </button>
+        </article>
+      </section>
+      <section class="bring-your-book" aria-labelledby="local-title">
+        <div>
+          <p class="eyebrow">One more for the shelf</p>
+          <h2 id="local-title">Bring your own book.</h2>
+          <p>
+            Choose a PDF from your device to open it in the reader. Your file stays in your browser.
+          </p>
+        </div>
+        <div class="file-picker">
+          <label for="local-pdf">Choose a PDF</label
+          ><input
+            id="local-pdf"
+            type="file"
+            accept="application/pdf,.pdf"
+            aria-describedby="file-help"
+          />
+          <p id="file-help">Close the reader with Escape or the Close button.</p>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <a class="wordmark" href="../index.html">folio<span>3D</span></a>
+      <p>Made to be read. Free to be built on.</p>
+      <a href="../README.txt">Documentation ↗</a>
+    </footer>
+  </body>
+</html>
