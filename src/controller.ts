@@ -13,6 +13,7 @@ import { WebGLBookRenderer } from './renderers/webgl';
 import { FlatBookRenderer } from './renderers/flat';
 import type { BookRenderer, View } from './renderers/renderer';
 import { ReaderUI, type Action } from './ui';
+import { PageTurnSound } from './sound';
 
 interface Gesture {
   id: number;
@@ -24,6 +25,8 @@ interface Gesture {
   progress: number;
   finished: boolean;
   commit: boolean;
+  started: boolean;
+  edgeTap: boolean;
   pan: boolean;
   panX: number;
   panY: number;
@@ -42,6 +45,7 @@ export class FlipbookController implements Flipbook {
   private readonly lifetime = new AbortController();
   private readonly ui: ReaderUI;
   private readonly observer: ResizeObserver;
+  private readonly sound: PageTurnSound;
   private readonly motion = matchMedia('(prefers-reduced-motion: reduce)');
   private events = new EventTarget();
   private provider?: DocumentProvider;
@@ -92,10 +96,12 @@ export class FlipbookController implements Flipbook {
       pageCount: 0,
       visiblePages: [],
       zoom: 1,
+      sound: options.sound ?? false,
       pageMode: resolveMode(options.pageMode ?? 'auto', container.clientWidth),
       renderer: 'flat',
       status: 'loading',
     };
+    this.sound = new PageTurnSound(this.state.sound);
     this.ui = new ReaderUI(
       container,
       options.label ?? 'Interactive flipbook',
@@ -220,7 +226,11 @@ export class FlipbookController implements Flipbook {
     cancelAnimationFrame(this.raf);
     this.raf = 0;
     this.turn = undefined;
+    const gesture = this.gesture;
     this.gesture = undefined;
+    this.ui.stage.dataset.dragging = 'false';
+    if (gesture && this.ui.stage.hasPointerCapture(gesture.id))
+      this.ui.stage.releasePointerCapture(gesture.id);
     this.target = undefined;
   }
   private async refresh(): Promise<void> {
@@ -326,7 +336,8 @@ export class FlipbookController implements Flipbook {
     if (!Number.isInteger(page) || page < 1)
       throw new RangeError('Page must be a positive integer.');
     if (this.state.pageCount) validatePage(page, this.state.pageCount);
-    if (this.busy || !this.view) {
+    this.sound.unlock();
+    if (this.busy || !this.view || (this.gesture && !this.gesture.pan)) {
       this.pending = page;
       return;
     }
@@ -424,7 +435,10 @@ export class FlipbookController implements Flipbook {
     this.ui.update(this.state);
     this.ui.status('');
     this.applyPendingZoom();
-    if (commit) this.emit('pagechange', this.getState());
+    if (commit) {
+      if (turn.from.pages.join() !== turn.to.pages.join()) this.sound.play();
+      this.emit('pagechange', this.getState());
+    }
     this.prefetch();
     this.drain();
   }
@@ -473,11 +487,21 @@ export class FlipbookController implements Flipbook {
     if (changed) this.emit('zoomchange', this.getState());
     this.ui.update(this.state);
   }
+  setSound(enabled: boolean): void {
+    if (!this.alive()) return;
+    this.sound.setEnabled(enabled);
+    if (this.state.sound === enabled) return;
+    this.state.sound = enabled;
+    this.ui.update(this.state);
+    this.emit('soundchange', this.getState());
+  }
   private action = (action: Action) => {
+    this.sound.unlock();
     if (action === 'previous') this.previous();
     else if (action === 'next') this.next();
     else if (action === 'zoomIn') this.setZoom(this.state.zoom * 1.25);
     else if (action === 'zoomOut') this.setZoom(this.state.zoom / 1.25);
+    else if (action === 'sound') this.setSound(!this.state.sound);
     else if (action === 'fit') {
       this.resetZoom();
     } else if (action === 'fullscreen') {
@@ -507,6 +531,7 @@ export class FlipbookController implements Flipbook {
       '0': () => this.action('fit'),
     };
     if (actions[event.key]) {
+      this.sound.unlock();
       event.preventDefault();
       actions[event.key]!();
     }
@@ -518,15 +543,7 @@ export class FlipbookController implements Flipbook {
       const bounds = this.ui.stage.getBoundingClientRect(),
         x = event.clientX - bounds.left;
       const pan = this.state.zoom > 1;
-      if (!pan && x > bounds.width * 0.22 && x < bounds.width * 0.78) return;
       const direction: 1 | -1 = x < bounds.width / 2 ? -1 : 1;
-      const target = adjacentPage(
-        this.state.page,
-        this.state.pageCount,
-        this.state.pageMode,
-        direction,
-      );
-      if (!pan && target === this.state.page) return;
       const gesture: Gesture = {
         id: event.pointerId,
         startX: event.clientX,
@@ -537,14 +554,17 @@ export class FlipbookController implements Flipbook {
         progress: 0,
         finished: false,
         commit: false,
+        started: false,
+        edgeTap: x <= bounds.width * 0.22 || x >= bounds.width * 0.78,
         pan,
         panX: this.panX,
         panY: this.panY,
       };
       this.gesture = gesture;
+      this.ui.stage.dataset.dragging = 'true';
       this.ui.stage.setPointerCapture(event.pointerId);
       this.ui.root.focus({ preventScroll: true });
-      if (!pan) void this.navigate(target, gesture).catch((e) => this.fail(e));
+      this.sound.unlock();
       event.preventDefault();
     } else {
       const gesture = this.gesture;
@@ -565,9 +585,23 @@ export class FlipbookController implements Flipbook {
           );
           this.renderer!.setTransform(this.state.zoom, this.panX, this.panY);
         } else {
+          const dx = gesture.startX - gesture.x;
+          if (!gesture.started) {
+            if (Math.abs(dx) < 6 || Math.abs(dx) < Math.abs(gesture.y - gesture.startY)) return;
+            if (this.state.pageMode === 'single') gesture.direction = dx > 0 ? 1 : -1;
+            const target = adjacentPage(
+              this.state.page,
+              this.state.pageCount,
+              this.state.pageMode,
+              gesture.direction,
+            );
+            if (target === this.state.page) return;
+            gesture.started = true;
+            void this.navigate(target, gesture).catch((e) => this.fail(e));
+          }
           gesture.progress = Math.max(
             0,
-            Math.min(1, ((gesture.startX - gesture.x) * gesture.direction) / (this.width * 0.65)),
+            Math.min(1, (dx * gesture.direction) / (this.width * 0.65)),
           );
           if (this.turn) {
             this.turn.progress = gesture.progress;
@@ -578,14 +612,27 @@ export class FlipbookController implements Flipbook {
         gesture.finished = true;
         gesture.commit =
           event.type === 'pointerup' &&
-          (Math.hypot(gesture.x - gesture.startX, gesture.y - gesture.startY) < 6 ||
+          ((gesture.edgeTap &&
+            Math.hypot(gesture.x - gesture.startX, gesture.y - gesture.startY) < 6) ||
             gesture.progress > 0.35);
         this.gesture = undefined;
+        this.ui.stage.dataset.dragging = 'false';
         if (this.ui.stage.hasPointerCapture(event.pointerId))
           this.ui.stage.releasePointerCapture(event.pointerId);
         if (!gesture.pan && this.turn?.gesture === gesture)
           this.animate(this.turn, gesture.commit ? 1 : 0);
+        else if (!gesture.pan && !gesture.started && gesture.commit) {
+          const target = adjacentPage(
+            this.state.page,
+            this.state.pageCount,
+            this.state.pageMode,
+            gesture.direction,
+          );
+          if (target !== this.state.page)
+            void this.navigate(target, gesture).catch((e) => this.fail(e));
+        }
         if (gesture.pan && this.refreshAfterPan) void this.refresh().catch(() => {});
+        if (!this.busy) this.drain();
       }
     }
   };
@@ -600,6 +647,7 @@ export class FlipbookController implements Flipbook {
     this.scheduler?.dispose();
     this.provider?.dispose();
     this.renderer?.dispose();
+    this.sound.dispose();
     this.ui.dispose();
     this.events = new EventTarget();
     this.view = undefined;

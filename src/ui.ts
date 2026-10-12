@@ -1,5 +1,5 @@
 import type { FlipbookState, Source } from './types';
-export type Action = 'previous' | 'next' | 'zoomIn' | 'zoomOut' | 'fit' | 'fullscreen';
+export type Action = 'previous' | 'next' | 'zoomIn' | 'zoomOut' | 'fit' | 'fullscreen' | 'sound';
 export class ReaderUI {
   readonly root = document.createElement('section');
   readonly stage = document.createElement('div');
@@ -72,6 +72,7 @@ export class ReaderUI {
     button('zoomOut', '−', 'Zoom out');
     button('zoomIn', '+', 'Zoom in');
     button('fit', 'Fit', 'Reset zoom');
+    button('sound', 'Sound off', 'Enable page-turn sound');
     if (document.fullscreenEnabled) button('fullscreen', 'Full screen', 'Toggle fullscreen');
     if (source.type === 'pdf') {
       const original = document.createElement('a');
@@ -112,10 +113,17 @@ export class ReaderUI {
     this.buttons.get('next')!.disabled = inactive || state.visiblePages.includes(state.pageCount);
     this.buttons.get('zoomOut')!.disabled = inactive || state.zoom <= 1;
     this.buttons.get('zoomIn')!.disabled = inactive || state.zoom >= 3;
+    const sound = this.buttons.get('sound')!;
+    sound.textContent = state.sound ? 'Sound on' : 'Sound off';
+    sound.setAttribute(
+      'aria-label',
+      state.sound ? 'Mute page-turn sound' : 'Enable page-turn sound',
+    );
+    sound.setAttribute('aria-pressed', String(state.sound));
     const pages = state.visiblePages.filter(Boolean).join(' and ');
     this.stage.setAttribute(
       'aria-label',
-      `Page${state.visiblePages.filter(Boolean).length > 1 ? 's' : ''} ${pages} of ${state.pageCount}. Use the controls to navigate.`,
+      `Page${state.visiblePages.filter(Boolean).length > 1 ? 's' : ''} ${pages} of ${state.pageCount}. Drag a page or use the controls to navigate.`,
     );
     if (state.status === 'ready')
       this.live.textContent = `Page ${state.page} of ${state.pageCount}`;

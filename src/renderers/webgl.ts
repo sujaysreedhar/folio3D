@@ -61,6 +61,7 @@ export class WebGLBookRenderer implements BookRenderer {
   private panX = 0;
   private panY = 0;
   private shift = 0;
+  private readonly cameraLift = 6 * Math.tan(0.14);
 
   constructor(onContextLost: () => void) {
     this.gl = new WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' });
@@ -72,7 +73,9 @@ export class WebGLBookRenderer implements BookRenderer {
     this.gl.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
     this.gl.shadowMap.enabled = true;
     this.gl.shadowMap.type = PCFShadowMap;
-    this.camera.position.set(0, 0, 6);
+    // A slight fixed viewing angle exposes the sheet's curved top/bottom edges.
+    this.camera.position.set(0, this.cameraLift, 6);
+    this.camera.lookAt(0, 0, 0);
     this.scene.add(new AmbientLight(0xffffff, 2.1));
     const light = new DirectionalLight(0xffffff, 2.5);
     light.position.set(-2, 3, 6);
@@ -142,13 +145,13 @@ export class WebGLBookRenderer implements BookRenderer {
   }
   private framing(): void {
     const aspect = this.width / this.height;
-    const h = Math.max(this.ratio * 1.16, (this.single ? 1.18 : 2.24) / aspect) / this.zoom;
+    const h = Math.max(this.ratio * 1.16 + 0.24, (this.single ? 1.18 : 2.24) / aspect) / this.zoom;
     this.camera.left = (-h * aspect) / 2;
     this.camera.right = (h * aspect) / 2;
     this.camera.top = h / 2;
     this.camera.bottom = -h / 2;
     this.camera.position.x = this.shift - (this.panX / this.width) * h * aspect;
-    this.camera.position.y = (this.panY / this.height) * h;
+    this.camera.position.y = this.cameraLift + (this.panY / this.height) * h;
     this.camera.updateProjectionMatrix();
   }
   private draw(): void {

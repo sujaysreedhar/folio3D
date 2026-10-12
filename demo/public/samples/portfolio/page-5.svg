@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" role="img" aria-labelledby="title desc">
+<title id="title">Printed matter.</title><desc id="desc">An independent journal about everyday creativity.</desc>
+<rect width="600" height="800" fill="#e4e7da"/>
+<g color="#283e34"><path d="M42 88H558M42 714H558" fill="none" stroke="currentColor" stroke-opacity=".3"/></g>
+<g fill="#283e34" font-family="Arial,Helvetica,sans-serif">
+<text x="42" y="57" font-size="14" letter-spacing="2">04 / EDITORIAL</text>
+<text x="42" y="170" font-size="60" font-family="Georgia,serif">Printed</text>
+<text x="42" y="235" font-size="60" font-family="Georgia,serif">matter.</text>
+<text x="42" y="278" font-size="17" >An independent journal about everyday creativity.</text>
+<text x="42" y="753" font-size="11" letter-spacing="1.4">FOLIO3D / ORIGINAL DEMO PUBLICATION</text>
+<text x="530" y="755" font-size="22" >05</text>
+</g><g transform="translate(110 315)">
+  <rect x="30" y="25" width="340" height="300" fill="#263e35" opacity=".15"/>
+  <rect width="340" height="300" fill="#bd4d35"/>
+  <circle cx="170" cy="130" r="85" fill="#edbe6d"/>
+  <path d="M85 130H255V215H85Z" fill="#314b3b"/>
+  <g fill="#fff5dc" font-family="Arial,sans-serif"><text x="25" y="270" font-size="18" >THE EVERYDAY / 01</text></g>
+</g></svg>

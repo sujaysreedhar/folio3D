@@ -12,6 +12,7 @@ export interface FlipbookOptions {
   assetBaseUrl?: string;
   memoryBudgetMB?: number;
   duration?: number;
+  sound?: boolean;
   label?: string;
 }
 export interface FlipbookState {
@@ -19,6 +20,7 @@ export interface FlipbookState {
   pageCount: number;
   visiblePages: (number | null)[];
   zoom: number;
+  sound: boolean;
   pageMode: ResolvedPageMode;
   renderer: Exclude<RendererMode, 'auto'>;
   status: 'loading' | 'ready' | 'turning' | 'error' | 'destroyed';
@@ -27,6 +29,7 @@ export interface FlipbookEvents {
   pagechange: FlipbookState;
   zoomchange: FlipbookState;
   rendererchange: FlipbookState;
+  soundchange: FlipbookState;
   error: Error;
 }
 export interface Flipbook {
@@ -36,6 +39,7 @@ export interface Flipbook {
   goToPage(page: number): void;
   setZoom(scale: number): void;
   resetZoom(): void;
+  setSound(enabled: boolean): void;
   getState(): FlipbookState;
   on<K extends keyof FlipbookEvents>(
     event: K,

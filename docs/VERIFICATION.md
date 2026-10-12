@@ -2,6 +2,22 @@
 
 Verified local release. Original MIT code, original sample publications and no public deployment or npm publishing. The approved scope is recorded in PLAN.md; PROGRESS.md records milestone evidence and implementation rulings.
 
+## Additional demo apps — 2026-10-12
+
+The repository now includes a catalog with section navigation, a single-page portfolio with project notes, and a bookshelf with PDF/image lightboxes and a local PDF picker. The homepage links to all three. Twelve original SVG pages and their deterministic generator are included.
+
+`npm run test:demos` passed **48 checks, 0 failures** against the production `demo-dist` build: Chromium, Firefox and WebKit, each at desktop 1200×900 and mobile 390×844 sizes. These checks cover homepage routes, section/project navigation, current-page lightbox opening, Escape and focus restoration, all three bookshelf publications, local PDFs without upload requests, viewport overflow, reduced-motion fallback, browser Back navigation and persisted page transitions. WebKit's pointer-click focus behavior is handled explicitly by focusing the opening control before creating a dialog. Inline readers remain mounted when a page enters the browser's back/forward cache; an independent review also verified an actual cached Chromium Back navigation with `pageshow.persisted === true`.
+
+Type checking, all 16 unit tests, the library build and the multipage demo build passed. Desktop and mobile screenshots of the new pages are saved as `artifacts/demo-{catalog,portfolio,bookshelf}-<project>.png`; desktop catalog/bookshelf and mobile portfolio layouts were visually inspected. Mobile results emulate browser viewports; physical-device behavior remains unverified. The updated README and demo website are local artifacts; this work does not deploy the new examples to the public domain.
+
+## Page dragging and sound follow-up — 2026-10-12
+
+Pages can now be grabbed across their interior. Double-page mode follows the selected side; single-page swipes follow movement direction. Short/cancelled drags settle back, central taps stay put, edge taps still navigate, and zoomed drags still pan. A small fixed camera angle exposes the existing cylindrical sheet curvature and cast shadows. Captures in `artifacts/drag/<project>/curved-page.png` show held turns; Chromium forward/drag, Firefox reverse and WebKit mobile frames were visually inspected.
+
+Optional paper sound is synthesized locally with Web Audio. The main playground enables it after user interaction; the library defaults to silent and exposes `sound`, `setSound()`, `soundchange` and a labelled toolbar toggle. Playback activation, completed-turn playback, muted/cancelled behavior and idempotent context disposal passed in Chromium and Firefox at both viewport sizes. This Windows WebKit build exposes no `AudioContext`, so four real-audio cases skip; unavailable/blocked audio navigation and sound preference behavior pass in all six configurations. Speaker/headphone audibility and physical mobile audio remain unverified.
+
+A fresh read-only review identified first-interaction audio through the page input/consumer controls and navigation racing a held pointer before movement begins. Both defects were reproduced, fixed and re-reviewed without remaining findings. The packed TypeScript consumer also checks the new sound API without `vite/client`. CI builds the self-referenced package declarations before checking demo imports. The complete browser run below includes the additional demo apps in the current workspace.
+
 ## Environment
 
 Windows 11 (10.0.26200), AMD Ryzen AI 9 365 with Radeon 880M, 28 GiB reported system RAM, 20 logical processors. Node.js 25.6.1, npm 11.9.0, Playwright 1.63.0. Runtime dependencies are pinned to Three.js 0.186.1 and PDF.js 6.4.299; the committed npm lockfile pins the toolchain.
@@ -22,11 +38,11 @@ The mobile configurations emulate viewport size and touch input on this Windows 
 | `npm test`                                                                       | 16 passed in 3 files                                                       |
 | `npm run build`                                                                  | Passed, ESM, declarations, CSS, matching worker/support assets             |
 | `npm run build:demo`                                                             | Passed, static consumer showcase                                           |
-| `npm run test:browser`                                                           | 154 passed, 8 intentional skips, 0 failures; six projects, 162 total cases |
+| `npm run test:browser`                                                           | 240 passed, 12 recorded skips, 0 failures; six projects, 252 total cases |
 | `npm run test:package`                                                           | 30 passed, 0 failures; real installed archive and plain-module hosting     |
 | `npm run test:browser -- --project chromium --grep "records warmed" --workers 1` | Passed; controlled timing run after other suites finished                  |
 
-Five timing cases are skipped because timings are recorded once in desktop Chromium; three touch-only cases are skipped in desktop configurations. The same touch interaction runs in all three touch configurations. Missing-WebGL tests intentionally emit Three.js context-creation errors before falling back successfully. The demo build emits a chunk-size advisory for bundled Three.js; it is not a build failure. The core library is about 655 kB uncompressed / 149 kB gzip; PDF support is a separate lazy chunk of about 620 kB / 164 kB gzip, excluding worker/support data.
+Five timing cases are skipped because timings are recorded once in desktop Chromium; three touch-only cases are skipped in desktop configurations; four real-audio cases skip in this WebKit build without Web Audio. The same touch interaction runs in all three touch configurations. Missing-WebGL tests intentionally emit Three.js context-creation errors before falling back successfully. The demo build emits a chunk-size advisory for bundled Three.js; it is not a build failure. The core library is about 658 kB uncompressed / 150 kB gzip; PDF support is a separate lazy chunk of about 620 kB / 164 kB gzip, excluding worker/support data.
 
 The additional `npm run test:browser -- --grep "touch viewport"` check passed in all 3 touch projects (3 desktop skips), including native Chromium touch dragging. Touch taps run in all three touch configurations. Chromium injects native touchStart/touchMove/touchEnd input to verify dragging; cross-engine mouse drags cover the shared Pointer Events/capture path. Physical touch dragging on Firefox/Safari devices remains unverified.
 
@@ -50,7 +66,7 @@ The full local release bundle includes these generated artifacts. They are ignor
 
 ## Timing measurement
 
-Headless Chromium, 1200×900 viewport with a 900×650 reader, DPR 1, default 600 ms turns, two warm-up turns and six measured turns. One Playwright worker; no other integration suite ran concurrently. There were 140 sampled frame intervals: median **33.30 ms**, p95 **33.40 ms**, maximum **50.10 ms**.
+Headless Chromium, 1200×900 viewport with a 900×650 reader, DPR 1, default 600 ms turns, two warm-up turns and six measured turns. One Playwright worker; no other integration suite ran concurrently. The follow-up run with the angled camera recorded 132 sampled frame intervals: median **33.30 ms**, p95 **33.40 ms**, maximum **100.10 ms**.
 
 Chromium reported ANGLE/Vulkan **SwiftShader**, a software renderer, on the hardware described above. The 60 Hz target was **not consistently achieved** in this environment. Hardware-accelerated GPU and real-mobile timings remain unverified; no universal smoothness claim is made. Raw requestAnimationFrame intervals and metadata are written to `artifacts/performance.json`. These are presentation intervals during warmed turns, not isolated CPU geometry time or GPU execution time.
 

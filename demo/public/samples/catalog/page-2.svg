@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" role="img" aria-labelledby="title desc">
+<title id="title">A place to pause.</title><desc id="desc">Arc lounge chair / Oak, woven linen</desc>
+<rect width="600" height="800" fill="#e9dfce"/>
+<g color="#283e34"><path d="M42 88H558M42 714H558" fill="none" stroke="currentColor" stroke-opacity=".3"/></g>
+<g fill="#283e34" font-family="Arial,Helvetica,sans-serif">
+<text x="42" y="57" font-size="14" letter-spacing="2">01 / SEATING</text>
+<text x="42" y="170" font-size="60" font-family="Georgia,serif">A place</text>
+<text x="42" y="235" font-size="60" font-family="Georgia,serif">to pause.</text>
+<text x="42" y="278" font-size="17" >Arc lounge chair / Oak, woven linen</text>
+<text x="42" y="753" font-size="11" letter-spacing="1.4">FOLIO3D / ORIGINAL DEMO PUBLICATION</text>
+<text x="530" y="755" font-size="22" >02</text>
+</g><g transform="translate(110 300)">
+  <path d="M80 210L55 345M270 210L300 345" stroke="#503b2e" stroke-width="18"/>
+  <rect x="55" y="45" width="245" height="155" rx="65" fill="#b36242"/>
+  <path d="M40 170Q175 120 315 170V235H40Z" fill="#cd7d56"/>
+  <path d="M55 180H300" stroke="#e9ad82" stroke-width="3"/>
+</g></svg>

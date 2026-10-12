@@ -32,10 +32,15 @@
   overflow: hidden;
   touch-action: pan-y;
   cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .folio3d-stage[data-zoomed='true'] {
   touch-action: none;
   cursor: move;
+}
+.folio3d-stage[data-dragging='true'] {
+  cursor: grabbing;
 }
 .folio3d-canvas,
 .folio3d-flat {

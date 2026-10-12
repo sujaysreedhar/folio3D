@@ -24,7 +24,13 @@ async function show(source: Source, title: string, initialPage = 1) {
   document.querySelector('#images')!.setAttribute('aria-pressed', String(source === images));
   document.querySelector('#pdf')!.setAttribute('aria-pressed', String(source === pdf));
   status.textContent = `Opening ${title.toLowerCase()}…`;
-  const next = createFlipbook(mount, { source, initialPage, assetBaseUrl: assets, label: title });
+  const next = createFlipbook(mount, {
+    source,
+    initialPage,
+    assetBaseUrl: assets,
+    label: title,
+    sound: true,
+  });
   book = next;
   try {
     await next.ready;
@@ -53,6 +59,7 @@ document.querySelector('#lightbox')!.addEventListener('click', () => {
     label: currentTitle,
     assetBaseUrl: assets,
     initialPage: book?.getState().page ?? 1,
+    sound: book?.getState().sound ?? true,
   });
   void modal.ready.catch(() => {});
 });

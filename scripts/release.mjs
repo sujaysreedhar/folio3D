@@ -36,7 +36,11 @@ for (const name of [
 await cp(resolve(directory, filename), resolve(release, filename));
 await cp(resolve(directory, `${filename}.sha256`), resolve(release, `${filename}.sha256`));
 for (const name of (await readdir(directory)).filter(
-  (name) => name === 'geometry' || name === 'performance.json' || /^demo-.*\.png$/.test(name),
+  (name) =>
+    name === 'geometry' ||
+    name === 'drag' ||
+    name === 'performance.json' ||
+    /^demo-.*\.png$/.test(name),
 ))
   await cp(resolve(directory, name), resolve(release, 'artifacts', name), { recursive: true });
 console.log(

@@ -35,9 +35,11 @@ const dist = resolve(consumer, 'node_modules/folio3d/dist');
 await writeFile(
   resolve(consumer, 'types-consumer.ts'),
   `import { createFlipbook, type FlipbookOptions } from 'folio3d';
-const options: FlipbookOptions = { source: { type: 'images', pages: [{ src: '/one.svg' }] } };
+const options: FlipbookOptions = { source: { type: 'images', pages: [{ src: '/one.svg' }] }, sound: true };
 const book = createFlipbook(document.createElement('div'), options);
 book.on('pagechange', state => { const page: number = state.page; console.log(page); });
+book.on('soundchange', state => { const sound: boolean = state.sound; console.log(sound); });
+book.setSound(false);
 book.goToPage(1); book.destroy();
 `,
 );

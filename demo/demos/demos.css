@@ -1,0 +1,344 @@
+.demo-intro {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  align-items: end;
+  gap: 40px;
+  padding-block: 48px 42px;
+}
+.demo-intro > p {
+  max-width: 320px;
+  justify-self: end;
+  font-size: 15px;
+  line-height: 1.8;
+  color: #536257;
+  margin: 0 0 5px;
+}
+.demo-layout {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+.demo-sidebar {
+  padding-top: 22px;
+}
+.demo-sidebar .eyebrow {
+  font-size: 9px;
+  letter-spacing: 1.3px;
+}
+.demo-sidebar h2 {
+  font-size: 28px;
+  margin-bottom: 22px;
+}
+.section-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.section-buttons button {
+  text-align: left;
+  padding: 12px 14px;
+  color: #536257;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.section-buttons button:hover {
+  background: #e8e8df;
+}
+.section-buttons button[aria-pressed='true'] {
+  color: #fff9ef;
+  background: #294638;
+  border-color: #294638;
+}
+.section-buttons button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+.project-note {
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 25px 0 20px;
+  min-height: 70px;
+}
+.sample-note {
+  border-top: 1px solid #243d3422;
+  padding-top: 18px;
+  font-size: 11px;
+  line-height: 1.8;
+  color: #647165;
+}
+.reader-panel {
+  min-width: 0;
+  border: 1px solid #243d3422;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #e7e4dc;
+}
+.reader-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 18px;
+  font-size: 12px;
+  background: #efede5;
+}
+.outline-button {
+  padding: 9px 13px;
+  font-size: 12px;
+  border: 1px solid #243d3440;
+  color: #243d34;
+  background: transparent;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.outline-button:hover {
+  background: #243d3409;
+}
+.outline-button:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+.demo-book {
+  height: clamp(460px, 64vh, 720px);
+}
+.demo-book .folio3d {
+  background: #e7e4dc;
+}
+.demo-book .folio3d-toolbar {
+  background: #efede5;
+}
+.reader-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 15px 18px;
+  border-top: 1px solid #243d3422;
+  font-size: 11px;
+  line-height: 1.6;
+  background: #f6f5ef;
+  color: #5a675b;
+}
+.demo-next {
+  padding-block: 32px 52px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #5a675b;
+}
+.demo-next .text-link {
+  margin: 0;
+}
+.portfolio-demo {
+  background: #f0f2eb;
+}
+.portfolio-demo .reader-panel,
+.portfolio-demo .demo-book .folio3d {
+  background: #dfe4da;
+}
+.shelf-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+  padding-bottom: 56px;
+}
+.shelf-item {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.cover-stage {
+  display: grid;
+  place-items: center;
+  padding: 35px 20px;
+  margin-bottom: 25px;
+  min-height: 300px;
+  background: #e5e5db;
+}
+.cover-stage img {
+  display: block;
+  width: 65%;
+  max-width: 205px;
+  height: auto;
+  box-shadow:
+    4px 7px 0 #fff9ef,
+    5px 8px 0 #243d3422,
+    10px 16px 24px #243d3420;
+}
+.magazine-cover {
+  background: #e5ddce;
+}
+.catalog-cover {
+  background: #e2d4bf;
+}
+.portfolio-cover {
+  background: #d6dfcf;
+}
+.shelf-item .eyebrow {
+  font-size: 9px;
+  letter-spacing: 1.4px;
+  margin-bottom: 14px;
+}
+.shelf-item h2 {
+  font-size: 33px;
+  margin-bottom: 12px;
+}
+.shelf-item > p:not(.eyebrow) {
+  font-size: 13px;
+  line-height: 1.8;
+  color: #536257;
+  margin: 0 0 24px;
+  flex: 1;
+}
+.read-button {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 0;
+  border: 0;
+  border-block: 1px solid #243d3430;
+  background: transparent;
+  color: #243d34;
+  font-size: 13px;
+}
+.read-button:hover {
+  color: #a5412d;
+  border-color: #a5412d;
+}
+.bring-your-book {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 60px;
+  align-items: center;
+  border-top: 1px solid #243d3422;
+  padding-block: 42px 60px;
+}
+.bring-your-book h2 {
+  font-size: 38px;
+  margin-bottom: 15px;
+}
+.bring-your-book p:not(.eyebrow) {
+  font-size: 13px;
+  line-height: 1.8;
+  color: #536257;
+  max-width: 370px;
+  margin-bottom: 0;
+}
+.file-picker {
+  min-width: 0;
+}
+.file-picker label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.file-picker input {
+  width: 100%;
+  max-width: 100%;
+  font-size: 12px;
+  color: #536257;
+}
+.file-picker input::file-selector-button {
+  border: 0;
+  background: #294638;
+  color: #fff9ef;
+  padding: 12px 16px;
+  margin-right: 12px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.file-picker input:focus-visible {
+  outline: 2px solid #bd452d;
+  outline-offset: 5px;
+}
+@media (max-width: 1000px) {
+  .demo-layout {
+    grid-template-columns: 170px minmax(0, 1fr);
+    gap: 20px;
+  }
+  .demo-intro h1 {
+    font-size: 60px;
+  }
+  .shelf-grid {
+    gap: 22px;
+  }
+  .cover-stage {
+    min-height: 240px;
+  }
+}
+@media (max-width: 700px) {
+  .demo-intro {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding-block: 35px 28px;
+  }
+  .demo-intro h1 {
+    font-size: 48px;
+    letter-spacing: -2px;
+  }
+  .demo-intro > p {
+    justify-self: start;
+    max-width: 390px;
+    font-size: 14px;
+  }
+  .demo-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .demo-sidebar {
+    padding-top: 0;
+  }
+  .demo-sidebar > .eyebrow,
+  .demo-sidebar h2,
+  .sample-note {
+    display: none;
+  }
+  .section-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .section-buttons button {
+    padding: 10px 12px;
+    font-size: 12px;
+    border-color: #243d3422;
+  }
+  .project-note {
+    margin: 14px 0 0;
+    min-height: 0;
+    font-size: 12px;
+  }
+  .demo-book {
+    height: 500px;
+  }
+  .reader-heading {
+    padding: 10px 12px;
+  }
+  .demo-next {
+    gap: 20px;
+    font-size: 11px;
+  }
+  .shelf-grid {
+    grid-template-columns: 1fr;
+    gap: 38px;
+  }
+  .cover-stage {
+    min-height: 300px;
+  }
+  .cover-stage img {
+    max-width: 205px;
+  }
+  .bring-your-book {
+    grid-template-columns: 1fr;
+    gap: 25px;
+    padding-block: 32px 42px;
+  }
+  .bring-your-book h2 {
+    font-size: 34px;
+  }
+}
