@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" role="img" aria-labelledby="title desc">
+<title id="title">The little things matter.</title><desc id="desc">Vessels &amp; trays / A study in shape and texture</desc>
+<rect width="600" height="800" fill="#e2e7d9"/>
+<g color="#283e34"><path d="M42 88H558M42 714H558" fill="none" stroke="currentColor" stroke-opacity=".3"/></g>
+<g fill="#283e34" font-family="Arial,Helvetica,sans-serif">
+<text x="42" y="57" font-size="14" letter-spacing="2">03 / OBJECTS</text>
+<text x="42" y="170" font-size="60" font-family="Georgia,serif">The little</text>
+<text x="42" y="235" font-size="60" font-family="Georgia,serif">things matter.</text>
+<text x="42" y="278" font-size="17" >Vessels &amp; trays / A study in shape and texture</text>
+<text x="42" y="753" font-size="11" letter-spacing="1.4">FOLIO3D / ORIGINAL DEMO PUBLICATION</text>
+<text x="530" y="755" font-size="22" >06</text>
+</g><g transform="translate(100 340)">
+  <ellipse cx="200" cy="295" rx="190" ry="16" fill="#273c36" opacity=".1"/>
+  <path d="M65 75H125V125Q190 150 168 275H22Q0 150 65 125Z" fill="#b8674c"/>
+  <ellipse cx="95" cy="76" rx="30" ry="8" fill="#633f30"/>
+  <path d="M250 140H330V170Q365 200 352 285H228Q215 200 250 170Z" fill="#e1b35e"/>
+  <ellipse cx="290" cy="140" rx="40" ry="9" fill="#826136"/>
+  <path d="M160 245H245V285H160Z" fill="#385b4b"/>
+</g></svg>

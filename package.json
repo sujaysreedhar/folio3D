@@ -1,0 +1,61 @@
+{
+  "name": "folio3d",
+  "version": "0.1.0",
+  "description": "A browser-only, curved 3D PDF and image flipbook",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "CHANGELOG.md",
+    "docs/VERIFICATION.md"
+  ],
+  "main": "./dist/folio3d.js",
+  "module": "./dist/folio3d.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/folio3d.js"
+    },
+    "./style.css": "./dist/folio3d.css",
+    "./assets/*": "./dist/assets/*"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "scripts": {
+    "dev": "vite --config vite.demo.config.ts --host 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:browser": "playwright test",
+    "test:demos": "playwright test --config playwright.demos.config.ts",
+    "fixtures": "node scripts/fixtures.mjs",
+    "demo:assets": "node scripts/demo-assets.mjs",
+    "build": "vite build && tsc -p tsconfig.build.json && node scripts/copy-assets.mjs",
+    "build:demo": "vite build --config vite.demo.config.ts",
+    "preview": "node scripts/serve.mjs",
+    "release": "npm run build && npm run build:demo && node scripts/release.mjs",
+    "prepare:package": "node scripts/package-smoke.mjs",
+    "test:package": "npm run prepare:package && playwright test --config playwright.package.config.ts"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "dependencies": {
+    "pdfjs-dist": "6.4.299",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "26.6.5",
+    "@types/three": "0.186.0",
+    "pdf-lib": "1.17.1",
+    "prettier": "3.9.10",
+    "typescript": "7.0.2",
+    "vite": "8.3.4",
+    "vitest": "4.1.11"
+  }
+}

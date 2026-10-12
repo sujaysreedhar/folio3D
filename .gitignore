@@ -1,0 +1,11 @@
+node_modules/
+dist/
+demo-dist/
+test-results/
+playwright-report/
+artifacts/
+.superpowers/
+*.tgz
+demo/public/lib/
+demo/public/LICENSE.txt
+demo/public/README.txt

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="A single-page design portfolio with project navigation and a lightbox. A Folio3D demo."
+    />
+    <title>Studio North — Folio3D portfolio demo</title>
+  </head>
+  <body data-publication="portfolio" class="portfolio-demo">
+    <header class="site-nav">
+      <a class="wordmark" href="../index.html"
+        >folio<span>3D</span><span class="brand-leaf" aria-hidden="true">/</span></a
+      >
+      <nav aria-label="Demo navigation">
+        <a href="../index.html#demos">All demos</a>
+        <a href="./catalog.html">Catalog</a>
+        <a href="./bookshelf.html">Reading room</a>
+      </nav>
+    </header>
+    <main class="demo-main">
+      <section class="demo-intro">
+        <div>
+          <p class="eyebrow">Demo 02 / The creative portfolio</p>
+          <h1>A thoughtful<br />point of view.</h1>
+        </div>
+        <p>
+          Meet Studio North. A little collection of spaces, objects and printed matter, one project
+          at a time.
+        </p>
+      </section>
+      <section class="demo-layout" aria-label="Explore selected work">
+        <aside class="demo-sidebar">
+          <p class="eyebrow">Studio North / 2026</p>
+          <h2>Selected work</h2>
+          <div
+            id="section-buttons"
+            class="section-buttons"
+            role="group"
+            aria-label="Portfolio projects"
+          ></div>
+          <p id="project-note" class="project-note" aria-live="polite">Opening selected work…</p>
+          <p class="sample-note">A fictional studio. An original portfolio to make your own.</p>
+        </aside>
+        <div class="reader-panel">
+          <div class="reader-heading">
+            <span id="publication-status" role="status">Opening portfolio…</span
+            ><button id="demo-lightbox" class="outline-button" disabled>Open lightbox</button>
+          </div>
+          <div id="demo-book" class="demo-book"></div>
+          <div class="reader-hint">
+            Choose a project, or turn a page to discover the next one.<button
+              id="retry"
+              class="outline-button"
+              hidden
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      </section>
+      <div class="demo-next">
+        <span>Stay a little longer</span
+        ><a class="text-link" href="./bookshelf.html">Visit the reading room ↗</a>
+      </div>
+    </main>
+    <footer>
+      <a class="wordmark" href="../index.html">folio<span>3D</span></a>
+      <p>Original samples. Your ideas next.</p>
+      <a href="../README.txt">Documentation ↗</a>
+    </footer>
+    <script type="module" src="./shared.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,225 @@
+.folio3d {
+  --folio-ink: #243c35;
+  --folio-paper: #f9f7f1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 240px;
+  overflow: hidden;
+  isolation: isolate;
+  color: var(--folio-ink);
+  background: #e8e5dd;
+  font:
+    14px/1.4 system-ui,
+    sans-serif;
+  box-sizing: border-box;
+  outline-offset: -3px;
+}
+.folio3d * {
+  box-sizing: border-box;
+}
+.folio3d :focus-visible,
+.folio3d-dialog :focus-visible {
+  outline: 2px solid #c54c30;
+  outline-offset: 3px;
+}
+.folio3d-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.folio3d-stage[data-zoomed='true'] {
+  touch-action: none;
+  cursor: move;
+}
+.folio3d-stage[data-dragging='true'] {
+  cursor: grabbing;
+}
+.folio3d-canvas,
+.folio3d-flat {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.folio3d-flat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.folio3d-spread {
+  display: flex;
+  flex: none;
+  box-shadow: 0 12px 22px #243c3522;
+  transform-origin: center;
+}
+.folio3d-page {
+  height: 100%;
+  flex: 1;
+  min-width: 0;
+  background: #fff;
+}
+.folio3d-page canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.folio3d-blank {
+  visibility: hidden;
+}
+.folio3d-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 10px 14px;
+  min-height: 58px;
+  background: var(--folio-paper);
+  border-top: 1px solid #243c351a;
+  z-index: 2;
+}
+.folio3d-toolbar button,
+.folio3d-original {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  min-width: 36px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.folio3d-toolbar button:hover:not(:disabled),
+.folio3d-original:hover {
+  background: #243c350c;
+}
+.folio3d-toolbar button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.folio3d-page-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  color: #53685f;
+}
+.folio3d-page-field input {
+  width: 46px;
+  height: 32px;
+  border: 1px solid #243c3528;
+  border-radius: 4px;
+  text-align: center;
+  color: var(--folio-ink);
+  background: white;
+  font: inherit;
+  appearance: textfield;
+}
+.folio3d-page-field input::-webkit-inner-spin-button {
+  appearance: none;
+}
+.folio3d-divider {
+  height: 20px;
+  width: 1px;
+  background: #243c3525;
+  margin: 0 8px;
+}
+.folio3d-original {
+  font-size: 12px;
+}
+.folio3d-message {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  max-width: min(420px, 85%);
+  padding: 15px 22px;
+  text-align: center;
+  background: #f9f7f1f2;
+  border: 1px solid #243c3520;
+  border-radius: 6px;
+  box-shadow: 0 4px 30px #243c3512;
+  z-index: 3;
+}
+.folio3d-message[hidden] {
+  display: none;
+}
+.folio3d-message[role='alert'] {
+  color: #9c3526;
+}
+.folio3d-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.folio3d:fullscreen {
+  width: 100vw;
+  height: 100dvh;
+}
+.folio3d-dialog {
+  width: min(1280px, 96vw);
+  height: 94dvh;
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  padding: 48px 0 0;
+  border: 0;
+  border-radius: 8px;
+  background: #f9f7f1;
+  box-shadow: 0 20px 100px #0005;
+}
+.folio3d-dialog::backdrop {
+  background: #10251fba;
+}
+.folio3d-close {
+  position: absolute;
+  right: 16px;
+  top: 9px;
+  min-height: 32px;
+  border: 1px solid #243c3530;
+  border-radius: 4px;
+  background: transparent;
+  color: #243c35;
+  padding: 5px 16px;
+  cursor: pointer;
+}
+.folio3d-modal-mount {
+  height: 100%;
+  width: 100%;
+}
+@media (max-width: 500px) {
+  .folio3d-toolbar {
+    padding: 7px 5px;
+    gap: 1px;
+  }
+  .folio3d-toolbar button {
+    padding: 7px;
+    min-width: 32px;
+  }
+  .folio3d-divider {
+    margin: 0 4px;
+  }
+  .folio3d-dialog {
+    width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+  }
+}
