@@ -1,7 +1,9 @@
 export type PageMode = 'auto' | 'single' | 'double';
 export type ResolvedPageMode = Exclude<PageMode, 'auto'>;
 export type RendererMode = 'auto' | 'webgl' | 'flat';
-export type Source = { type: 'pdf'; data: string | Blob | Uint8Array } | { type: 'images'; pages: Array<{ src: string; alt?: string }> };
+export type Source =
+  | { type: 'pdf'; data: string | Blob | Uint8Array }
+  | { type: 'images'; pages: Array<{ src: string; alt?: string }> };
 export interface FlipbookOptions {
   source: Source;
   renderer?: RendererMode;
@@ -35,11 +37,22 @@ export interface Flipbook {
   setZoom(scale: number): void;
   resetZoom(): void;
   getState(): FlipbookState;
-  on<K extends keyof FlipbookEvents>(event: K, listener: (data: FlipbookEvents[K]) => void): () => void;
+  on<K extends keyof FlipbookEvents>(
+    event: K,
+    listener: (data: FlipbookEvents[K]) => void,
+  ): () => void;
   destroy(): void;
 }
-export interface PageSize { width: number; height: number }
-export interface PageSurface { canvas: HTMLCanvasElement; bytes: number; dispose(): void; onDispose?(listener: () => void): () => void }
+export interface PageSize {
+  width: number;
+  height: number;
+}
+export interface PageSurface {
+  canvas: HTMLCanvasElement;
+  bytes: number;
+  dispose(): void;
+  onDispose?(listener: () => void): () => void;
+}
 export interface DocumentProvider {
   readonly pageCount: number;
   size(page: number, signal: AbortSignal): Promise<PageSize>;

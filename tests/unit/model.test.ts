@@ -7,7 +7,9 @@ describe('one-based book model', () => {
       for (let page = 1; page <= count; page++) {
         const spread = visiblePages(page, count, 'double');
         expect(spread).toContain(page);
-        expect(spread.filter((p): p is number => p !== null).every(p => p >= 1 && p <= count)).toBe(true);
+        expect(
+          spread.filter((p): p is number => p !== null).every((p) => p >= 1 && p <= count),
+        ).toBe(true);
         expect(visiblePages(page, count, 'single')).toEqual([page]);
       }
     });
@@ -32,7 +34,8 @@ describe('one-based book model', () => {
     expect(visiblePages(3, 5, resolveMode('auto', 400))).toEqual([3]);
   });
   it('rejects fractional, nonfinite and out-of-range pages', () => {
-    for (const page of [0, -1, 6, 1.5, NaN, Infinity]) expect(() => validatePage(page, 5)).toThrow(RangeError);
+    for (const page of [0, -1, 6, 1.5, NaN, Infinity])
+      expect(() => validatePage(page, 5)).toThrow(RangeError);
     expect(() => validatePage(5, 5)).not.toThrow();
   });
 });
