@@ -3,7 +3,7 @@
 - [x] Milestone 1: model and fixtures
 - [x] Milestone 2: curved 3D renderer
 - [x] Milestone 3: providers and render scheduler
-- [ ] Milestone 4: reader interaction and fallback
+- [x] Milestone 4: reader interaction and fallback
 - [ ] Milestone 5: distribution and demo
 - [ ] Milestone 6: release verification
 
@@ -28,3 +28,7 @@ Ruling: use installed Chrome for the initial visual gate — current Playwright 
 ## Milestone 3
 
 Scheduler tests RED2 then GREEN15/15 suite. Chrome provider tests3/3: text/scanned/mixed/rotated/200-page PDFs, unchanged caller bytes, Blob, malformed PDF and image failure. Provider rasterizes only requested pages, contains content without cropping, cleans up page resources. Owned surfaces reserve conservative canvas+GPU bytes; allocations include concurrent work and eviction disposes attached textures. Max2 tasks; stale generations reject AbortError. PDF.js6 removed isEvalSupported from its API; omitted unsupported setting (core reader does not execute PDF document scripts).
+
+## Milestone 4
+
+Reader test RED against unimplemented API, then Chrome11/11 GREEN. Covered navigation/validation/zoom, independent focused keyboards, layout, modal Escape/focus, reduced motion, latest queued target, partial/complete/cancelled drags, context loss, resize mid-turn, destroy during load and50 flat mount/destroy cycles. Unit15/15, typecheck and production build pass. Core bundle654kB uncompressed plus lazy PDF chunks; image books do not load PDF chunks. Browser distribution/package testing is milestone5.
