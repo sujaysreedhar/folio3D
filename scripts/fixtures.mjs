@@ -8,7 +8,7 @@ const colors = ['#cb4b31', '#ede9df', '#253d38', '#e8b455', '#b7c9d2', '#e6ddd1'
 for (let i = 1; i <= 6; i++) {
   const dark = i === 1 || i === 3;
   const ink = dark ? '#fff9ef' : '#233c36';
-  const subtitle = ['Objects & ideas', 'A slower kind of reading', 'Form follows curiosity', 'Made to be explored', 'Room for a new perspective', 'Until the next chapter'][i - 1];
+  const subtitle = ['Objects &amp; ideas', 'A slower kind of reading', 'Form follows curiosity', 'Made to be explored', 'Room for a new perspective', 'Until the next chapter'][i - 1];
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800"><rect width="600" height="800" fill="${colors[i-1]}"/><g fill="${ink}" font-family="Arial,sans-serif"><text x="42" y="58" font-size="16" letter-spacing="4">FIELDNOTES / VOL. 01</text><text x="42" y="${i===1?190:160}" font-size="${i===1?76:54}" font-weight="bold">${i===1?'Small':'A different'}</text><text x="42" y="${i===1?270:222}" font-size="${i===1?76:54}" font-weight="bold">${i===1?'wonders.':'point of view.'}</text><text x="44" y="320" font-size="19">${subtitle}</text><text x="42" y="752" font-size="14" letter-spacing="2">FOLIO3D — ORIGINAL EDITION</text><text x="538" y="752" font-size="24">${String(i).padStart(2,'0')}</text></g><g transform="translate(300 515)"><circle r="134" fill="${dark?'#edbc63':'#cb4b31'}"/><path d="M-134 0 A134 134 0 0 0 134 0" fill="${dark?'#f6e7c5':'#253d38'}"/><ellipse rx="134" ry="40" fill="none" stroke="${ink}" stroke-width="2"/><path d="M0-134V134M-134 0H134" stroke="${ink}" stroke-width="2"/></g><path d="M555 28h18v32h-9V42h-9z" fill="${ink}"/></svg>`;
   await writeFile(`tests/fixtures/page-${i}.svg`, svg);
   await writeFile(`demo/public/samples/page-${i}.svg`, svg);
