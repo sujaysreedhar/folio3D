@@ -39,7 +39,7 @@ export interface Flipbook {
   destroy(): void;
 }
 export interface PageSize { width: number; height: number }
-export interface PageSurface { canvas: HTMLCanvasElement; bytes: number; dispose(): void }
+export interface PageSurface { canvas: HTMLCanvasElement; bytes: number; dispose(): void; onDispose?(listener: () => void): () => void }
 export interface DocumentProvider {
   readonly pageCount: number;
   size(page: number, signal: AbortSignal): Promise<PageSize>;

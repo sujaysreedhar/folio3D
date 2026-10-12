@@ -5,6 +5,7 @@ import {
 } from 'three';
 import { createSheetGeometry, deformSheet } from './geometry';
 import type { BookRenderer, View } from './renderer';
+import type {PageSurface} from '../types';
 
 export class WebGLBookRenderer implements BookRenderer {
   readonly element: HTMLCanvasElement;
@@ -12,6 +13,7 @@ export class WebGLBookRenderer implements BookRenderer {
   private readonly scene = new Scene();
   private readonly camera = new OrthographicCamera(-1,1,1,-1,.1,30);
   private readonly textures = new Map<HTMLCanvasElement, CanvasTexture>();
+  private readonly textureListeners = new Map<HTMLCanvasElement, () => void>();
   private readonly left = new Mesh(new PlaneGeometry(1,1), new MeshStandardMaterial({roughness:.92}));
   private readonly right = new Mesh(new PlaneGeometry(1,1), new MeshStandardMaterial({roughness:.92}));
   private readonly front = new Mesh(createSheetGeometry(), new MeshStandardMaterial({ roughness: .92, side: FrontSide }));
@@ -43,21 +45,22 @@ export class WebGLBookRenderer implements BookRenderer {
   }
   private onLost: () => void;
   private lost=(event: Event) => {event.preventDefault();this.onLost();};
-  private texture(canvas:HTMLCanvasElement):CanvasTexture {
+  private texture(surface:PageSurface):CanvasTexture {
+    const canvas=surface.canvas;
     let texture=this.textures.get(canvas);
-    if(!texture){texture=new CanvasTexture(canvas);texture.colorSpace=SRGBColorSpace;texture.generateMipmaps=false;this.textures.set(canvas,texture);}
+    if(!texture){texture=new CanvasTexture(canvas);texture.colorSpace=SRGBColorSpace;texture.generateMipmaps=false;this.textures.set(canvas,texture);const remove=surface.onDispose?.(()=>{this.textures.get(canvas)?.dispose();this.textures.delete(canvas);this.textureListeners.delete(canvas);});if(remove)this.textureListeners.set(canvas,remove);}
     return texture;
   }
   private page(mesh: Mesh<PlaneGeometry, MeshStandardMaterial>, page:number|null|undefined, view:View, x:number):void {
     const surface=page ? view.surfaces.get(page) : undefined;
     mesh.visible=page!==null&&page!==undefined;
     mesh.position.x=x;mesh.scale.y=this.ratio;
-    mesh.material.map=surface?this.texture(surface.canvas):null;
+    mesh.material.map=surface?this.texture(surface):null;
     mesh.material.color.set(surface?0xffffff:0xf5f1e8);mesh.material.needsUpdate=true;
   }
   private retain(views:View[]):void {
     const keep=new Set(views.flatMap(v=>Array.from(v.surfaces.values(),s=>s.canvas)));
-    for(const [canvas,texture] of this.textures)if(!keep.has(canvas)){texture.dispose();this.textures.delete(canvas);}
+    for(const [canvas,texture] of this.textures)if(!keep.has(canvas)){texture.dispose();this.textures.delete(canvas);this.textureListeners.get(canvas)?.();this.textureListeners.delete(canvas);}
   }
   private framing():void {
     const aspect=this.width/this.height;
@@ -84,8 +87,8 @@ export class WebGLBookRenderer implements BookRenderer {
     this.page(this.left,this.single?null:direction===1?from.pages[0]:to.pages[0],direction===1?from:to,-.5);
     this.page(this.right,this.single?null:direction===1?to.pages[1]:from.pages[1],direction===1?to:from,.5);
     const frontSurface=source?from.surfaces.get(source):undefined,backSurface=target?to.surfaces.get(target):undefined;
-    this.front.material.map=frontSurface?this.texture(frontSurface.canvas):null;
-    this.back.material.map=backSurface?this.texture(backSurface.canvas):null;
+    this.front.material.map=frontSurface?this.texture(frontSurface):null;
+    this.back.material.map=backSurface?this.texture(backSurface):null;
     // For mirrored backward geometry, face orientation swaps.
     this.front.material.side=direction===1?FrontSide:BackSide;
     this.back.material.side=direction===1?BackSide:FrontSide;
@@ -105,6 +108,7 @@ export class WebGLBookRenderer implements BookRenderer {
   dispose():void {
     this.element.removeEventListener('webglcontextlost',this.lost);
     for(const texture of this.textures.values())texture.dispose();this.textures.clear();
+    for(const remove of this.textureListeners.values())remove();this.textureListeners.clear();
     for(const mesh of [this.left,this.right,this.front,this.back,this.ground,...this.stacks]){mesh.geometry.dispose();mesh.material.dispose();}
     this.gl.dispose();this.element.remove();
   }

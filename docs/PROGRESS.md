@@ -2,7 +2,7 @@
 
 - [x] Milestone 1: model and fixtures
 - [x] Milestone 2: curved 3D renderer
-- [ ] Milestone 3: providers and render scheduler
+- [x] Milestone 3: providers and render scheduler
 - [ ] Milestone 4: reader interaction and fallback
 - [ ] Milestone 5: distribution and demo
 - [ ] Milestone 6: release verification
@@ -24,3 +24,7 @@ Model tests observed RED (9 failed against placeholders) then GREEN (9 passed). 
 Geometry tests RED (flat placeholder failed endpoints/curvature), GREEN13/13. Chrome browser inspection passed. Viewed forward0/25/50/75/100%, reverse and single frames in artifacts/geometry; corrected initial stack positions and material consistency found in visual inspection. Sheet is an integrated unit tangent with sinusoidal curvature and40 width segments, stable spine and oriented reverse texture. No idle render loop in renderer. Full turn scheduling and pointer reversal integrate with the controller in milestone4.
 
 Ruling: use installed Chrome for the initial visual gate — current Playwright browser download was slow, stopped after20%; full Firefox/WebKit verification will use installed compatible engines or install required versions before release. Cost if unsupported: report exact unverified browser coverage rather than imply it passed.
+
+## Milestone 3
+
+Scheduler tests RED2 then GREEN15/15 suite. Chrome provider tests3/3: text/scanned/mixed/rotated/200-page PDFs, unchanged caller bytes, Blob, malformed PDF and image failure. Provider rasterizes only requested pages, contains content without cropping, cleans up page resources. Owned surfaces reserve conservative canvas+GPU bytes; allocations include concurrent work and eviction disposes attached textures. Max2 tasks; stale generations reject AbortError. PDF.js6 removed isEvalSupported from its API; omitted unsupported setting (core reader does not execute PDF document scripts).
