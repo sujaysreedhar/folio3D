@@ -43,7 +43,7 @@ if (dryRun) {
         source: head,
         sourceClean: !status,
         files: expected,
-        cdn: `https://cdn.jsdelivr.net/gh/${repository}@${tag}/dist/folio3d.js`,
+        cdn: `https://cdn.jsdelivr.net/gh/${repository}@${tag}/${pkg.jsdelivr}`,
       },
       null,
       2,
@@ -162,5 +162,5 @@ for (const name of expected) {
 }
 release = await api(`/releases/${release.id}`, 'PATCH', { draft: false, make_latest: 'true' });
 console.log(
-  `Published ${release.html_url}\nCDN: https://cdn.jsdelivr.net/gh/${repository}@${tag}/dist/folio3d.js`,
+  `Published ${release.html_url}\nCDN: https://cdn.jsdelivr.net/gh/${repository}@${tag}/${pkg.jsdelivr}`,
 );

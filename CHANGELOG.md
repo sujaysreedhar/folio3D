@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 — 2026-10-13
+
+Added `folio3d.min.js` with minified lazy PDF chunks and `folio3d.min.css` as an alias of the already-minified stylesheet. Included both variants in npm/browser/website packages, added typed `folio3d/min` and `folio3d/style.min.css` exports, and updated CDN examples to use the minified entry. Original entry points and version 0.2.0 remain unchanged. License comments and bundled notices are retained.
+
 ## 0.2.0 — 2026-10-13
 
 Added six-at-a-time thumbnail navigation, nested PDF/custom contents, optional persistent bookmarks synchronized between same-document readers, and Classic/Modern/Sepia/Midnight themes. New `theme`, `contents`, `storageKey`, `setTheme()`, `getContents()`, `getBookmarks()`, `toggleBookmark()`, `themechange` and `bookmarkchange` APIs. Thumbnail allocations share the configured memory budget and are released when their view closes.

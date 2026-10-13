@@ -1,6 +1,6 @@
 {
   "name": "folio3d",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A browser-only, curved 3D PDF and image flipbook",
   "type": "module",
   "license": "MIT",
@@ -12,8 +12,8 @@
   "bugs": {
     "url": "https://github.com/sujaysreedhar/folio3D/issues"
   },
-  "jsdelivr": "dist/folio3d.js",
-  "unpkg": "dist/folio3d.js",
+  "jsdelivr": "dist/folio3d.min.js",
+  "unpkg": "dist/folio3d.min.js",
   "files": [
     "dist",
     "README.md",
@@ -33,6 +33,11 @@
       "import": "./dist/folio3d.js"
     },
     "./style.css": "./dist/folio3d.css",
+    "./min": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/folio3d.min.js"
+    },
+    "./style.min.css": "./dist/folio3d.min.css",
     "./assets/*": "./dist/assets/*"
   },
   "sideEffects": [
@@ -46,7 +51,7 @@
     "test:demos": "playwright test --config playwright.demos.config.ts",
     "fixtures": "node scripts/fixtures.mjs && node scripts/outline-fixture.mjs",
     "demo:assets": "node scripts/demo-assets.mjs",
-    "build": "vite build && tsc -p tsconfig.build.json && node scripts/copy-assets.mjs",
+    "build": "vite build && node scripts/minify.mjs && tsc -p tsconfig.build.json && node scripts/copy-assets.mjs",
     "build:demo": "vite build --config vite.demo.config.ts",
     "preview": "node scripts/serve.mjs",
     "release": "npm run build && npm run build:demo && node scripts/release.mjs",
@@ -68,6 +73,7 @@
     "fflate": "0.8.3",
     "pdf-lib": "1.17.1",
     "prettier": "3.9.10",
+    "rolldown": "1.2.13",
     "typescript": "7.0.2",
     "vite": "8.3.4",
     "vitest": "4.1.11"

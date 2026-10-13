@@ -1,5 +1,11 @@
 # Folio3D verification
 
+## Version 0.2.1 — 2026-10-13
+
+Added a separate minified ES module graph and `.min.css` alias without changing runtime source. The initial missing-file regression failed with HTTP 404 before implementation. Final typecheck, 16 unit tests and production library/demo builds passed; **54/54 packed-package checks passed** across Chromium, Firefox and WebKit at desktop/touch sizes. The checks exercise regular and minified PDF consumers, navigation, thumbnails, bookmarks, worker failures, themes, minified lazy imports and actual WebGL page turns. The `/min` TypeScript declarations compile without Vite ambient types.
+
+The entry measures 570,295 bytes versus 669,447 bytes for the regular entry: 14.8% smaller before transfer compression. CSS was already minified and is copied unchanged to its explicit `.min.css` alias. Independent review confirmed asset-base resolution, complete minified import graph, exports, license comments/notices and package inclusion. Physical-device and hardware-GPU limitations from v0.2.0 still apply.
+
 ## Version 0.2.0 — 2026-10-13
 
 Reader navigation (six-at-a-time thumbnails, PDF/custom contents, bookmarks), four themes, demo integration and GitHub/CDN packaging were checked locally on the same Windows browser matrix below.

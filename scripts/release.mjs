@@ -65,7 +65,7 @@ for (const name of [
 await cp('demo/public/samples/magazine.pdf', resolve(browser, 'sample.pdf'));
 await writeFile(
   resolve(browser, 'example.html'),
-  `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Folio3D ${version}</title><link rel="stylesheet" href="./dist/folio3d.css"><div id="book" style="height:90vh"></div><script type="module">import {createFlipbook} from './dist/folio3d.js';const book=createFlipbook(document.querySelector('#book'),{source:{type:'pdf',data:'./sample.pdf'},theme:'modern',storageKey:'sample-${version}'});book.ready.catch(console.error);</script></html>`,
+  `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Folio3D ${version}</title><link rel="stylesheet" href="./dist/folio3d.min.css"><div id="book" style="height:90vh"></div><script type="module">import {createFlipbook} from './dist/folio3d.min.js';const book=createFlipbook(document.querySelector('#book'),{source:{type:'pdf',data:'./sample.pdf'},theme:'modern',storageKey:'sample-${version}'});book.ready.catch(console.error);</script></html>`,
 );
 const browserZip = `folio3d-${version}-browser.zip`;
 const websiteZip = `folio3d-${version}-website.zip`;

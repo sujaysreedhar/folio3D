@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-for (const path of ['/nested/', '/npm/'])
+for (const path of ['/nested/', '/nested/minified.html', '/npm/'])
   test(`${path} consumer loads PDF and navigates`, async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
@@ -17,6 +17,34 @@ for (const path of ['/nested/', '/npm/'])
     ).toHaveAttribute('aria-pressed', 'true');
     expect(errors).toEqual([]);
   });
+
+test('minified distribution is smaller and keeps matching minified chunks', async ({ request }) => {
+  const regular = await request.get('/nested/lib/folio3d.js');
+  const compact = await request.get('/nested/lib/folio3d.min.js');
+  const css = await request.get('/nested/lib/folio3d.min.css');
+  expect(compact.status()).toBe(200);
+  expect(css.status()).toBe(200);
+  expect((await compact.body()).length).toBeLessThan((await regular.body()).length * 0.9);
+  expect(await compact.text()).toContain('.min.js');
+});
+
+test('minified browser entry turns 3D pages with lazy PDF chunks', async ({ page }) => {
+  const errors: string[] = [];
+  const chunks: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('request', (request) => {
+    if (request.url().includes('/chunks/')) chunks.push(request.url());
+  });
+  await page.goto('/nested/minified.html?webgl');
+  await expect(page.locator('.folio3d')).toHaveAttribute('data-status', 'ready');
+  await expect(page.locator('.folio3d')).toHaveAttribute('data-renderer', 'webgl');
+  await page.getByRole('button', { name: 'Next page', exact: true }).click();
+  await expect(page.getByRole('spinbutton', { name: 'Page number' })).toHaveValue('2');
+  await expect(page.locator('.folio3d')).toHaveAttribute('data-status', 'ready');
+  expect(chunks.length).toBeGreaterThan(0);
+  expect(chunks.every((url) => url.endsWith('.min.js'))).toBe(true);
+  expect(errors).toEqual([]);
+});
 test('missing worker assets produce a visible useful failure', async ({ page, context }) => {
   await context.route('**/pdf.worker.min.mjs', (route) => route.abort());
   await page.goto('/nested/');

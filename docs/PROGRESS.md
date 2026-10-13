@@ -1,5 +1,9 @@
 # Folio3D execution ledger — docs/PLAN.md
 
+## Minified distribution: v0.2.1 — 2026-10-13
+
+User requested a minified version after the GitHub/CDN release. Added a separate Rolldown output (`folio3d.min.js`, minified lazy chunks) and explicit alias of already-minified CSS, typed npm subpath exports, CDN defaults and updated downloadable examples. Regular files remain intact. Regression went from missing-file HTTP404 to 54/54 package checks passing in all six browser configurations; typecheck, units16/16 and builds pass. Independent build/import/license review returned no findings. Publish as a new immutable patch tag using the existing authorized release flow.
+
 ## Next phase: v0.2.0 — 2026-10-13
 
 User selected reader navigation and requested multiple Modern-inspired themes, CDN publication and a GitHub download. Implemented lazy paginated thumbnails, PDF/custom contents, keyed optional bookmarks with active-reader synchronization, and Classic/Modern/Sepia/Midnight themes. Added a theme selector, sample outline, demo contents, browser/website ZIPs, TGZ/checksums, publishing guide, theme tokens and a GitHub release workflow. This explicitly expands the original v0.1 deferred scope and publication authorization.

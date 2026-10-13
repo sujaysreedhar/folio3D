@@ -76,10 +76,10 @@ Relative build paths support hosting at the domain root or in a subdirectory. Se
 The versioned GitHub release is available through jsDelivr. Keep the JavaScript and CSS on the same version:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sujaysreedhar/folio3D@v0.2.0/dist/folio3d.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sujaysreedhar/folio3D@v0.2.1/dist/folio3d.min.css" />
 <div id="book" style="height:600px"></div>
 <script type="module">
-  import { createFlipbook } from 'https://cdn.jsdelivr.net/gh/sujaysreedhar/folio3D@v0.2.0/dist/folio3d.js';
+  import { createFlipbook } from 'https://cdn.jsdelivr.net/gh/sujaysreedhar/folio3D@v0.2.1/dist/folio3d.min.js';
   const book = createFlipbook(document.querySelector('#book'), {
     source: { type: 'pdf', data: './catalog.pdf' },
     theme: 'modern',
@@ -91,9 +91,11 @@ The versioned GitHub release is available through jsDelivr. Keep the JavaScript 
 
 Worker and support assets resolve from the same CDN version automatically. Cross-origin workers need `worker-src blob:` when a Content Security Policy is in use; see [publishing and CSP notes](docs/PUBLISHING.md).
 
+The `.min.js` entry and its lazy PDF chunks are fully minified. The `.min.css` file is an explicit alias for the already-minified stylesheet. Regular `folio3d.js` / `folio3d.css` files remain available. Preserve the entire `dist/` directory when self-hosting, including `chunks/min/`, worker assets and licenses.
+
 ### Download and self-host
 
-Get the [browser ZIP](https://github.com/sujaysreedhar/folio3D/releases/download/v0.2.0/folio3d-0.2.0-browser.zip), [website ZIP](https://github.com/sujaysreedhar/folio3D/releases/download/v0.2.0/folio3d-0.2.0-website.zip), or [all release assets and checksums](https://github.com/sujaysreedhar/folio3D/releases/tag/v0.2.0). The browser ZIP includes `example.html` and a sample PDF; serve it over HTTP(S).
+Get the [browser ZIP](https://github.com/sujaysreedhar/folio3D/releases/download/v0.2.1/folio3d-0.2.1-browser.zip), [website ZIP](https://github.com/sujaysreedhar/folio3D/releases/download/v0.2.1/folio3d-0.2.1-website.zip), or [all release assets and checksums](https://github.com/sujaysreedhar/folio3D/releases/tag/v0.2.1). The browser ZIP includes `example.html` and a sample PDF; serve it over HTTP(S).
 
 Copy the entire `dist` directory to `lib` on your static server. Preserve `chunks`, `assets` and license files alongside the entry point. No CDN or runtime package resolution is needed.
 
@@ -118,7 +120,7 @@ The viewer fills its container. Set a positive height; width is responsive. Defa
 Install the downloadable GitHub package directly. This release does not require npm registry publication:
 
 ```sh
-npm install https://github.com/sujaysreedhar/folio3D/releases/download/v0.2.0/folio3d-0.2.0.tgz
+npm install https://github.com/sujaysreedhar/folio3D/releases/download/v0.2.1/folio3d-0.2.1.tgz
 ```
 
 Or build and install a local archive:
@@ -126,7 +128,7 @@ Or build and install a local archive:
 ```sh
 npm run release
 # In your consuming project:
-npm install /path/to/folio3d/artifacts/folio3d-0.2.0.tgz
+npm install /path/to/folio3d/artifacts/folio3d-0.2.1.tgz
 ```
 
 ```ts
@@ -148,6 +150,8 @@ await cp('node_modules/folio3d/dist/assets', 'public/folio-assets', { recursive:
 ```
 
 Serve these assets unchanged from the **same installed version** as the main package. Include their license files when redistributing. `assetBaseUrl` may be an absolute URL or a page-relative path. PDF.js is loaded lazily; image-only books do not load PDF chunks or start PDF workers.
+
+An explicit minified npm entry is also available as `import { createFlipbook } from 'folio3d/min'`, with `import 'folio3d/style.min.css'`. Both use the same TypeScript declarations. The default `folio3d` entry retains annotations useful to application bundlers.
 
 ## Sources and options
 
