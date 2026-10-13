@@ -20,8 +20,26 @@ a {
   text-decoration: none;
 }
 button,
-input {
+input,
+select {
   font: inherit;
+}
+.theme-picker {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+}
+.theme-picker select {
+  padding: 8px;
+  color: #243d34;
+  background: #f6f5ef;
+  border: 1px solid #b9c2b9;
+  border-radius: 4px;
+}
+.theme-picker select:focus-visible {
+  outline: 2px solid #553f83;
+  outline-offset: 3px;
 }
 button,
 a,
@@ -161,12 +179,6 @@ h1 {
 }
 .book-mount {
   height: clamp(420px, 63vh, 700px);
-}
-.book-mount .folio3d {
-  background: #e7e4dc;
-}
-.book-mount .folio3d-toolbar {
-  background: #efede5;
 }
 .book-caption {
   display: flex;

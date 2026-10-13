@@ -6,6 +6,8 @@ export type {
   Source,
   PageMode,
   RendererMode,
+  Theme,
+  ContentsEntry,
 } from './types';
 import type { Flipbook, FlipbookOptions } from './types';
 import { FlipbookController } from './controller';

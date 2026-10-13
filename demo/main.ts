@@ -1,4 +1,4 @@
-import { createFlipbook, openFlipbook, type Flipbook, type Source } from 'folio3d';
+import { createFlipbook, openFlipbook, type Flipbook, type Source, type Theme } from 'folio3d';
 import 'folio3d/style.css';
 import './site.css';
 
@@ -17,6 +17,20 @@ const mount = document.querySelector<HTMLElement>('#book')!,
 let book: Flipbook | undefined,
   currentSource: Source = images,
   currentTitle = 'Image book';
+let theme: Theme = 'modern';
+const imageContents = [
+  { title: 'Small wonders', page: 1 },
+  { title: 'A slower kind of reading', page: 2 },
+  { title: 'Room for a new perspective', page: 5 },
+];
+function navigationOptions(source: Source) {
+  return {
+    theme,
+    contents: source === images ? imageContents : undefined,
+    storageKey:
+      source === images ? 'fieldnotes-images-v1' : source === pdf ? 'fieldnotes-pdf-v1' : undefined,
+  };
+}
 async function show(source: Source, title: string, initialPage = 1) {
   book?.destroy();
   currentSource = source;
@@ -30,6 +44,7 @@ async function show(source: Source, title: string, initialPage = 1) {
     assetBaseUrl: assets,
     label: title,
     sound: true,
+    ...navigationOptions(source),
   });
   book = next;
   try {
@@ -60,8 +75,13 @@ document.querySelector('#lightbox')!.addEventListener('click', () => {
     assetBaseUrl: assets,
     initialPage: book?.getState().page ?? 1,
     sound: book?.getState().sound ?? true,
+    ...navigationOptions(currentSource),
   });
   void modal.ready.catch(() => {});
+});
+document.querySelector<HTMLSelectElement>('#reader-theme')!.addEventListener('change', (event) => {
+  theme = (event.target as HTMLSelectElement).value as Theme;
+  book?.setTheme(theme);
 });
 document.querySelector<HTMLButtonElement>('#copy')!.addEventListener('click', async (event) => {
   const button = event.target as HTMLButtonElement;

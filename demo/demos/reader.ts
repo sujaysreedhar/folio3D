@@ -14,6 +14,12 @@ export function openPublication(
     assetBaseUrl,
     initialPage,
     pageMode,
+    contents: publication.sections.length ? publication.sections : undefined,
+    storageKey:
+      publication.source.type === 'pdf' && typeof publication.source.data !== 'string'
+        ? undefined
+        : `demo:${publication.title}:v1`,
+    theme: pageMode === 'single' ? 'modern' : 'sepia',
   });
   modal = next;
   // The reader itself presents loading errors in its accessible alert.

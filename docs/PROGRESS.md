@@ -1,5 +1,11 @@
 # Folio3D execution ledger — docs/PLAN.md
 
+## Next phase: v0.2.0 — 2026-10-13
+
+User selected reader navigation and requested multiple Modern-inspired themes, CDN publication and a GitHub download. Implemented lazy paginated thumbnails, PDF/custom contents, keyed optional bookmarks with active-reader synchronization, and Classic/Modern/Sepia/Midnight themes. Added a theme selector, sample outline, demo contents, browser/website ZIPs, TGZ/checksums, publishing guide, theme tokens and a GitHub release workflow. This explicitly expands the original v0.1 deferred scope and publication authorization.
+
+Initial thumbnail UI regression failed before implementation. The same-key bookmark overwrite was also reproduced before fixing it. Full matrix 294 passed/12 skipped, final navigation 66/66, production demos 48/48, final package consumers 36/36, units 16/16, typecheck/builds passed. See VERIFICATION.md for limitations and reviewed screenshots. Release artifacts are prepared separately from source commits; public distribution lives in the immutable release tag.
+
 - [x] Milestone 1: model and fixtures
 - [x] Milestone 2: curved 3D renderer
 - [x] Milestone 3: providers and render scheduler

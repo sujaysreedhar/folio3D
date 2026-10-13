@@ -5,6 +5,8 @@ import type {
   FlipbookEvents,
   DocumentProvider,
   PageSize,
+  Theme,
+  ContentsEntry,
 } from './types';
 import { visiblePages, adjacentPage, resolveMode, validatePage } from './model';
 import { openDocument } from './providers';
@@ -14,6 +16,8 @@ import { FlatBookRenderer } from './renderers/flat';
 import type { BookRenderer, View } from './renderers/renderer';
 import { ReaderUI, type Action } from './ui';
 import { PageTurnSound } from './sound';
+import { Bookmarks } from './bookmarks';
+import { ReaderNavigation } from './navigation';
 
 interface Gesture {
   id: number;
@@ -46,6 +50,9 @@ export class FlipbookController implements Flipbook {
   private readonly ui: ReaderUI;
   private readonly observer: ResizeObserver;
   private readonly sound: PageTurnSound;
+  private readonly navigation: ReaderNavigation;
+  private bookmarks?: Bookmarks;
+  private contentsPromise?: Promise<ContentsEntry[]>;
   private readonly motion = matchMedia('(prefers-reduced-motion: reduce)');
   private events = new EventTarget();
   private provider?: DocumentProvider;
@@ -77,6 +84,11 @@ export class FlipbookController implements Flipbook {
       throw new TypeError('A container HTMLElement is required.');
     if (!options?.source) throw new TypeError('A PDF or image source is required.');
     if (
+      options.theme !== undefined &&
+      !['classic', 'modern', 'sepia', 'midnight'].includes(options.theme)
+    )
+      throw new RangeError('Unknown reader theme.');
+    if (
       options.initialPage !== undefined &&
       (!Number.isInteger(options.initialPage) || options.initialPage < 1)
     )
@@ -97,6 +109,7 @@ export class FlipbookController implements Flipbook {
       visiblePages: [],
       zoom: 1,
       sound: options.sound ?? false,
+      theme: options.theme ?? 'classic',
       pageMode: resolveMode(options.pageMode ?? 'auto', container.clientWidth),
       renderer: 'flat',
       status: 'loading',
@@ -110,7 +123,16 @@ export class FlipbookController implements Flipbook {
       (page) => this.goToPage(page),
       this.lifetime.signal,
     );
-    this.ui.update(this.state);
+    this.navigation = new ReaderNavigation(
+      this.ui.browse,
+      (page) => this.goToPage(page),
+      () => this.getContents(),
+      () => this.getBookmarks(),
+      (page) => this.toggleBookmark(page),
+      this.lifetime.signal,
+    );
+    this.ui.root.append(this.navigation.element);
+    this.updateUI();
     this.ui.status('Opening book…');
     this.ui.root.addEventListener('keydown', this.keydown, { signal: this.lifetime.signal });
     for (const type of [
@@ -129,6 +151,11 @@ export class FlipbookController implements Flipbook {
   }
   private alive() {
     return this.state.status !== 'destroyed';
+  }
+  private updateUI(): void {
+    this.ui.update(this.state);
+    this.ui.updateBookmark(this.getBookmarks().includes(this.state.page));
+    this.navigation.update(this.state);
   }
   private checkAlive() {
     if (!this.alive() || this.lifetime.signal.aborted)
@@ -154,13 +181,23 @@ export class FlipbookController implements Flipbook {
       this.provider = await openDocument(this.options.source, this.assetBase, this.lifetime.signal);
       this.checkAlive();
       this.state.pageCount = this.provider.pageCount;
+      this.bookmarks = new Bookmarks(
+        this.state.pageCount,
+        this.options.storageKey,
+        () => {
+          this.updateUI();
+          this.navigation.bookmarksChanged();
+          this.emit('bookmarkchange', this.getBookmarks());
+        },
+        this.lifetime.signal,
+      );
+      const budget = (this.options.memoryBudgetMB ?? 96) * 1024 * 1024;
+      const thumbnailBudget = Math.min(6 * 120 * 160 * 8, budget / 8);
+      this.navigation.connect(this.provider, thumbnailBudget);
       validatePage(this.state.page, this.state.pageCount);
       this.size = await this.provider.size(1, this.lifetime.signal);
       this.checkAlive();
-      this.scheduler = new RenderScheduler(
-        this.provider,
-        (this.options.memoryBudgetMB ?? 96) * 1024 * 1024,
-      );
+      this.scheduler = new RenderScheduler(this.provider, budget - thumbnailBudget);
       this.createRenderer();
       this.measure();
       await this.refresh();
@@ -264,7 +301,7 @@ export class FlipbookController implements Flipbook {
       this.state.visiblePages = pages;
       this.state.status = 'ready';
       this.busy = false;
-      this.ui.update(this.state);
+      this.updateUI();
       this.ui.status('');
       this.applyPendingZoom();
       this.prefetch();
@@ -302,7 +339,7 @@ export class FlipbookController implements Flipbook {
     this.pendingZoom = undefined;
     this.state.status = initial ? 'error' : 'ready';
     if (this.view) this.renderer?.show(this.view);
-    this.ui.update(this.state);
+    this.updateUI();
     this.ui.status(error.message, true);
     this.emit('error', error);
     if (initial) {
@@ -362,7 +399,7 @@ export class FlipbookController implements Flipbook {
     this.target = target;
     this.state.status = 'turning';
     this.resetZoom();
-    this.ui.update(this.state);
+    this.updateUI();
     this.ui.status('Preparing pages…');
     const surfaces = await this.scheduler.prepare(
       [...new Set([...fromPages, ...toPages].filter((n): n is number => n !== null))],
@@ -432,7 +469,7 @@ export class FlipbookController implements Flipbook {
     this.renderer!.show(this.view);
     this.cancelTurn();
     this.busy = false;
-    this.ui.update(this.state);
+    this.updateUI();
     this.ui.status('');
     this.applyPendingZoom();
     if (commit) {
@@ -461,7 +498,7 @@ export class FlipbookController implements Flipbook {
     this.state.zoom = Math.max(1, Math.min(3, scale));
     if (this.state.zoom === 1) this.panX = this.panY = 0;
     this.renderer?.setTransform(this.state.zoom, this.panX, this.panY);
-    this.ui.update(this.state);
+    this.updateUI();
     this.emit('zoomchange', this.getState());
     clearTimeout(this.zoomTimer);
     if (this.view)
@@ -485,15 +522,65 @@ export class FlipbookController implements Flipbook {
     this.panX = this.panY = 0;
     this.renderer?.setTransform(1, 0, 0);
     if (changed) this.emit('zoomchange', this.getState());
-    this.ui.update(this.state);
+    this.updateUI();
   }
   setSound(enabled: boolean): void {
     if (!this.alive()) return;
     this.sound.setEnabled(enabled);
     if (this.state.sound === enabled) return;
     this.state.sound = enabled;
-    this.ui.update(this.state);
+    this.updateUI();
     this.emit('soundchange', this.getState());
+  }
+  setTheme(theme: Theme): void {
+    if (!['classic', 'modern', 'sepia', 'midnight'].includes(theme))
+      throw new RangeError('Unknown reader theme.');
+    if (!this.alive() || this.state.theme === theme) return;
+    this.state.theme = theme;
+    this.updateUI();
+    this.ui.root.closest<HTMLElement>('.folio3d-dialog')?.setAttribute('data-theme', theme);
+    this.emit('themechange', this.getState());
+  }
+  getBookmarks(): number[] {
+    return this.bookmarks?.get() ?? [];
+  }
+  toggleBookmark(page = this.state.page): void {
+    if (!this.alive()) return;
+    if (!this.bookmarks) throw new Error('Wait for book.ready before bookmarking.');
+    this.bookmarks.toggle(page);
+    this.ui.updateBookmark(this.getBookmarks().includes(this.state.page));
+    this.navigation.bookmarksChanged();
+    this.emit('bookmarkchange', this.getBookmarks());
+  }
+  async getContents(): Promise<ContentsEntry[]> {
+    await this.ready;
+    this.checkAlive();
+    if (!this.contentsPromise) {
+      this.contentsPromise = (async () => {
+        const entries =
+          this.options.contents ?? (await this.provider?.contents?.(this.lifetime.signal)) ?? [];
+        const normalize = (items: ContentsEntry[], depth = 0): ContentsEntry[] => {
+          if (depth > 32) return [];
+          return items.map((entry) => ({
+            title: String(entry.title),
+            page:
+              Number.isInteger(entry.page) &&
+              entry.page! >= 1 &&
+              entry.page! <= this.state.pageCount
+                ? entry.page
+                : undefined,
+            children: entry.children ? normalize(entry.children, depth + 1) : undefined,
+          }));
+        };
+        return normalize(entries);
+      })().catch((error) => {
+        this.contentsPromise = undefined;
+        throw error;
+      });
+    }
+    const entries = await this.contentsPromise;
+    this.checkAlive();
+    return structuredClone(entries);
   }
   private action = (action: Action) => {
     this.sound.unlock();
@@ -502,6 +589,7 @@ export class FlipbookController implements Flipbook {
     else if (action === 'zoomIn') this.setZoom(this.state.zoom * 1.25);
     else if (action === 'zoomOut') this.setZoom(this.state.zoom / 1.25);
     else if (action === 'sound') this.setSound(!this.state.sound);
+    else if (action === 'bookmark') this.toggleBookmark();
     else if (action === 'fit') {
       this.resetZoom();
     } else if (action === 'fullscreen') {

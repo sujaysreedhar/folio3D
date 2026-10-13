@@ -1,4 +1,4 @@
-import type { DocumentProvider, PageSize, PageSurface } from '../types';
+import type { ContentsEntry, DocumentProvider, PageSize, PageSurface } from '../types';
 import { checkAbort, contain, createSurface } from './surface';
 import type { PDFDocumentProxy, PDFDocumentLoadingTask } from 'pdfjs-dist';
 
@@ -53,7 +53,7 @@ export class PDFProvider implements DocumentProvider {
       const error = e as Error;
       if (error.name === 'PasswordException')
         throw new Error(
-          'This PDF requires a password. Password-protected documents are not supported in v0.1.',
+          'This PDF requires a password. Password-protected documents are not supported.',
         );
       if (/worker|fetch.*module/i.test(error.message))
         throw new Error(
@@ -74,6 +74,48 @@ export class PDFProvider implements DocumentProvider {
     checkAbort(signal);
     const v = p.getViewport({ scale: 1 });
     return { width: v.width, height: v.height };
+  }
+  async contents(signal: AbortSignal): Promise<ContentsEntry[]> {
+    checkAbort(signal);
+    const outline = await this.document.getOutline();
+    checkAbort(signal);
+    const convert = async (
+      items: NonNullable<typeof outline>,
+      depth = 0,
+    ): Promise<ContentsEntry[]> => {
+      if (depth > 32) return [];
+      const entries: ContentsEntry[] = [];
+      for (const item of items) {
+        checkAbort(signal);
+        let page: number | undefined;
+        try {
+          const destination =
+            typeof item.dest === 'string'
+              ? await this.document.getDestination(item.dest)
+              : item.dest;
+          if (Array.isArray(destination)) {
+            const target = destination[0];
+            const index =
+              typeof target === 'number'
+                ? target
+                : target && typeof target === 'object' && 'num' in target
+                  ? await this.document.getPageIndex(target)
+                  : -1;
+            if (Number.isInteger(index) && index >= 0 && index < this.pageCount) page = index + 1;
+          }
+        } catch {
+          /* Broken/external destinations retain their label without a link. */
+        }
+        checkAbort(signal);
+        entries.push({
+          title: item.title,
+          page,
+          children: await convert(item.items ?? [], depth + 1),
+        });
+      }
+      return entries;
+    };
+    return convert(outline ?? []);
   }
   async render(page: number, size: PageSize, signal: AbortSignal): Promise<PageSurface> {
     checkAbort(signal);

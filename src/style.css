@@ -1,6 +1,48 @@
-.folio3d {
+.folio3d,
+.folio3d-dialog {
   --folio-ink: #243c35;
   --folio-paper: #f9f7f1;
+  --folio-stage: #e8e5dd;
+  --folio-muted: #53685f;
+  --folio-border: #c8cec7;
+  --folio-hover: #e6e9df;
+  --folio-accent: #9c3526;
+  --folio-font: system-ui, sans-serif;
+}
+.folio3d[data-theme='modern'],
+.folio3d-dialog[data-theme='modern'] {
+  --folio-ink: #231c30;
+  --folio-paper: #faf8fd;
+  --folio-stage: #e8e3ef;
+  --folio-muted: #62576f;
+  --folio-border: #d3c9e1;
+  --folio-hover: #ebe3f5;
+  --folio-accent: #553f83;
+  --folio-font: 'IBM Plex Serif', Georgia, serif;
+}
+.folio3d[data-theme='sepia'],
+.folio3d-dialog[data-theme='sepia'] {
+  --folio-ink: #433125;
+  --folio-paper: #f7eedc;
+  --folio-stage: #dfcfb4;
+  --folio-muted: #705b42;
+  --folio-border: #c9b899;
+  --folio-hover: #eadbbf;
+  --folio-accent: #884326;
+  --folio-font: Georgia, serif;
+}
+.folio3d[data-theme='midnight'],
+.folio3d-dialog[data-theme='midnight'] {
+  color-scheme: dark;
+  --folio-ink: #f1ecfa;
+  --folio-paper: #25212e;
+  --folio-stage: #17141e;
+  --folio-muted: #c4b9d2;
+  --folio-border: #62556f;
+  --folio-hover: #3a3048;
+  --folio-accent: #d4b6ff;
+}
+.folio3d {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -10,10 +52,8 @@
   overflow: hidden;
   isolation: isolate;
   color: var(--folio-ink);
-  background: #e8e5dd;
-  font:
-    14px/1.4 system-ui,
-    sans-serif;
+  background: var(--folio-stage);
+  font: 14px/1.4 var(--folio-font);
   box-sizing: border-box;
   outline-offset: -3px;
 }
@@ -22,7 +62,7 @@
 }
 .folio3d :focus-visible,
 .folio3d-dialog :focus-visible {
-  outline: 2px solid #c54c30;
+  outline: 2px solid var(--folio-accent);
   outline-offset: 3px;
 }
 .folio3d-stage {
@@ -82,7 +122,7 @@
   padding: 10px 14px;
   min-height: 58px;
   background: var(--folio-paper);
-  border-top: 1px solid #243c351a;
+  border-top: 1px solid var(--folio-border);
   z-index: 2;
 }
 .folio3d-toolbar button,
@@ -103,7 +143,7 @@
 }
 .folio3d-toolbar button:hover:not(:disabled),
 .folio3d-original:hover {
-  background: #243c350c;
+  background: var(--folio-hover);
 }
 .folio3d-toolbar button:disabled {
   opacity: 0.3;
@@ -114,16 +154,16 @@
   align-items: center;
   gap: 4px;
   white-space: nowrap;
-  color: #53685f;
+  color: var(--folio-muted);
 }
 .folio3d-page-field input {
   width: 46px;
   height: 32px;
-  border: 1px solid #243c3528;
+  border: 1px solid var(--folio-border);
   border-radius: 4px;
   text-align: center;
   color: var(--folio-ink);
-  background: white;
+  background: var(--folio-paper);
   font: inherit;
   appearance: textfield;
 }
@@ -133,7 +173,7 @@
 .folio3d-divider {
   height: 20px;
   width: 1px;
-  background: #243c3525;
+  background: var(--folio-border);
   margin: 0 8px;
 }
 .folio3d-original {
@@ -147,8 +187,8 @@
   max-width: min(420px, 85%);
   padding: 15px 22px;
   text-align: center;
-  background: #f9f7f1f2;
-  border: 1px solid #243c3520;
+  background: var(--folio-paper);
+  border: 1px solid var(--folio-border);
   border-radius: 6px;
   box-shadow: 0 4px 30px #243c3512;
   z-index: 3;
@@ -157,7 +197,7 @@
   display: none;
 }
 .folio3d-message[role='alert'] {
-  color: #9c3526;
+  color: var(--folio-accent);
 }
 .folio3d-sr {
   position: absolute;
@@ -183,7 +223,8 @@
   padding: 48px 0 0;
   border: 0;
   border-radius: 8px;
-  background: #f9f7f1;
+  background: var(--folio-paper);
+  color: var(--folio-ink);
   box-shadow: 0 20px 100px #0005;
 }
 .folio3d-dialog::backdrop {
@@ -194,16 +235,140 @@
   right: 16px;
   top: 9px;
   min-height: 32px;
-  border: 1px solid #243c3530;
+  border: 1px solid var(--folio-border);
   border-radius: 4px;
   background: transparent;
-  color: #243c35;
+  color: var(--folio-ink);
   padding: 5px 16px;
   cursor: pointer;
 }
 .folio3d-modal-mount {
   height: 100%;
   width: 100%;
+}
+.folio3d-navigation {
+  position: absolute;
+  inset: 12px auto 12px 12px;
+  width: min(300px, calc(100% - 24px));
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  background: var(--folio-paper);
+  color: var(--folio-ink);
+  border: 1px solid var(--folio-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px #0003;
+}
+.folio3d-navigation[hidden] {
+  display: none;
+}
+.folio3d-navigation-heading,
+.folio3d-navigation-tabs,
+.folio3d-thumbnail-pager,
+.folio3d-bookmark-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.folio3d-navigation-heading {
+  padding: 8px 12px;
+}
+.folio3d-navigation-heading strong {
+  font-size: 16px;
+  font-weight: 500;
+}
+.folio3d-navigation-tabs {
+  padding: 0 8px 8px;
+  border-bottom: 1px solid var(--folio-border);
+}
+.folio3d-navigation button {
+  min-height: 40px;
+  min-width: 40px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 8px;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.folio3d-navigation button:hover:not(:disabled),
+.folio3d-navigation [aria-pressed='true'],
+.folio3d-toolbar [aria-pressed='true'] {
+  background: var(--folio-hover);
+}
+.folio3d-navigation [aria-current='page'] {
+  border-color: var(--folio-accent);
+}
+.folio3d-navigation button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.folio3d-navigation-body {
+  overflow: auto;
+  padding: 12px;
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+.folio3d-navigation-body p {
+  color: var(--folio-muted);
+}
+.folio3d-thumbnail-pager {
+  margin-bottom: 8px;
+}
+.folio3d-thumbnail-pager span {
+  font-size: 12px;
+  color: var(--folio-muted);
+}
+.folio3d-thumbnails {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.folio3d-thumbnails button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+}
+.folio3d-thumbnails canvas,
+.folio3d-thumbnail-placeholder {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: var(--folio-stage);
+}
+.folio3d-thumbnail-placeholder {
+  padding: 24px 4px;
+  font-size: 12px;
+}
+.folio3d-contents {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.folio3d-contents .folio3d-contents {
+  padding-left: 12px;
+  border-left: 1px solid var(--folio-border);
+}
+.folio3d-contents button {
+  text-align: left;
+  width: 100%;
+}
+.folio3d-contents span {
+  display: block;
+  padding: 8px;
+  color: var(--folio-muted);
+}
+.folio3d-bookmark-row {
+  border-bottom: 1px solid var(--folio-border);
+}
+.folio3d-bookmark-row button:first-child {
+  flex: 1;
+  text-align: left;
 }
 @media (max-width: 500px) {
   .folio3d-toolbar {

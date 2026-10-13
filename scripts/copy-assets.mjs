@@ -1,4 +1,5 @@
-import { cp, mkdir } from 'node:fs/promises';
+import { cp, mkdir, rm } from 'node:fs/promises';
+import { resolve, sep } from 'node:path';
 await mkdir('dist/assets', { recursive: true });
 await mkdir('dist/licenses', { recursive: true });
 for (const name of ['pdf.worker.min.mjs', 'cmaps', 'standard_fonts', 'wasm']) {
@@ -12,10 +13,14 @@ for (const [name, path] of [
   ['PDFJS-LICENSE.txt', 'node_modules/pdfjs-dist/LICENSE'],
 ])
   await cp(path, `dist/licenses/${name}`);
-await cp('dist', 'demo/public/lib', { recursive: true });
-for (const name of ['LICENSE', 'README.md']) {
+const demoLib = resolve('demo/public/lib');
+if (!demoLib.startsWith(resolve('demo/public') + sep))
+  throw new Error('Invalid demo library directory.');
+await rm(demoLib, { recursive: true, force: true });
+await cp('dist', demoLib, { recursive: true });
+for (const name of ['LICENSE', 'README.md', 'THIRD_PARTY_NOTICES.md']) {
   try {
-    await cp(name, `demo/public/${name === 'LICENSE' ? 'LICENSE' : 'README'}.txt`);
+    await cp(name, `demo/public/${name.replace(/\.md$/, '')}.txt`);
   } catch (e) {
     if (e.code !== 'ENOENT') throw e;
   }

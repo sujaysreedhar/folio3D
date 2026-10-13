@@ -1,10 +1,12 @@
 import type { FlipbookState, Source } from './types';
-export type Action = 'previous' | 'next' | 'zoomIn' | 'zoomOut' | 'fit' | 'fullscreen' | 'sound';
+export type Action =
+  'previous' | 'next' | 'zoomIn' | 'zoomOut' | 'fit' | 'fullscreen' | 'sound' | 'bookmark';
 export class ReaderUI {
   readonly root = document.createElement('section');
   readonly stage = document.createElement('div');
   readonly message = document.createElement('div');
   readonly input = document.createElement('input');
+  readonly browse = document.createElement('button');
   private count = document.createElement('span');
   private live = document.createElement('span');
   private buttons = new Map<Action, HTMLButtonElement>();
@@ -30,6 +32,10 @@ export class ReaderUI {
     toolbar.className = 'folio3d-toolbar';
     toolbar.setAttribute('role', 'group');
     toolbar.setAttribute('aria-label', 'Book controls');
+    this.browse.type = 'button';
+    this.browse.textContent = 'Browse';
+    this.browse.setAttribute('aria-label', 'Browse book');
+    toolbar.append(this.browse);
     const button = (action: Action, text: string, aria: string) => {
       const el = document.createElement('button');
       el.type = 'button';
@@ -73,6 +79,7 @@ export class ReaderUI {
     button('zoomIn', '+', 'Zoom in');
     button('fit', 'Fit', 'Reset zoom');
     button('sound', 'Sound off', 'Enable page-turn sound');
+    button('bookmark', 'Bookmark', 'Bookmark this page');
     if (document.fullscreenEnabled) button('fullscreen', 'Full screen', 'Toggle fullscreen');
     if (source.type === 'pdf') {
       const original = document.createElement('a');
@@ -99,6 +106,7 @@ export class ReaderUI {
     container.append(this.root);
   }
   update(state: FlipbookState): void {
+    this.root.dataset.theme = state.theme;
     this.root.dataset.status = state.status;
     this.root.dataset.renderer = state.renderer;
     this.stage.dataset.zoomed = String(state.zoom > 1);
@@ -108,6 +116,7 @@ export class ReaderUI {
     const inactive =
       state.status === 'loading' || state.status === 'error' || state.status === 'destroyed';
     this.input.disabled = inactive;
+    this.browse.disabled = inactive;
     for (const button of this.buttons.values()) button.disabled = inactive;
     this.buttons.get('previous')!.disabled = inactive || state.page <= 1;
     this.buttons.get('next')!.disabled = inactive || state.visiblePages.includes(state.pageCount);
@@ -127,6 +136,15 @@ export class ReaderUI {
     );
     if (state.status === 'ready')
       this.live.textContent = `Page ${state.page} of ${state.pageCount}`;
+  }
+  updateBookmark(saved: boolean): void {
+    const button = this.buttons.get('bookmark')!;
+    button.textContent = saved ? 'Bookmarked' : 'Bookmark';
+    button.setAttribute(
+      'aria-label',
+      saved ? 'Remove bookmark for this page' : 'Bookmark this page',
+    );
+    button.setAttribute('aria-pressed', String(saved));
   }
   status(text: string, error = false): void {
     this.message.textContent = text;

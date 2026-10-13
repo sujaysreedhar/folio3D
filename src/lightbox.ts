@@ -6,6 +6,7 @@ export function createLightbox(
   const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const dialog = document.createElement('dialog');
   dialog.className = 'folio3d-dialog';
+  dialog.dataset.theme = options.theme ?? 'classic';
   dialog.setAttribute('aria-label', options.label ?? 'Flipbook reader');
   const close = document.createElement('button');
   close.className = 'folio3d-close';

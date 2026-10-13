@@ -5,7 +5,9 @@ test-results/
 playwright-report/
 artifacts/
 .superpowers/
+debug.log
 *.tgz
 demo/public/lib/
 demo/public/LICENSE.txt
 demo/public/README.txt
+demo/public/THIRD_PARTY_NOTICES.txt

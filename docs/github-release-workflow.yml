@@ -1,0 +1,38 @@
+name: Publish GitHub and CDN release
+# Optional: install at .github/workflows/release.yml using a login with workflow permission.
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: folio3d-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build:demo
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run test:browser
+      - run: npm run test:demos
+      - run: npm run test:package
+      - run: npm run release
+      - name: Publish verified archives and CDN tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          npm run publish:github

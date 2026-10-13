@@ -35,11 +35,15 @@ const dist = resolve(consumer, 'node_modules/folio3d/dist');
 await writeFile(
   resolve(consumer, 'types-consumer.ts'),
   `import { createFlipbook, type FlipbookOptions } from 'folio3d';
-const options: FlipbookOptions = { source: { type: 'images', pages: [{ src: '/one.svg' }] }, sound: true };
+const options: FlipbookOptions = { source: { type: 'images', pages: [{ src: '/one.svg' }] }, sound: true, theme: 'modern', contents: [{ title: 'Start', page: 1 }], storageKey: 'types-test' };
 const book = createFlipbook(document.createElement('div'), options);
 book.on('pagechange', state => { const page: number = state.page; console.log(page); });
 book.on('soundchange', state => { const sound: boolean = state.sound; console.log(sound); });
 book.setSound(false);
+book.setTheme('midnight');
+book.on('themechange', state => { const theme: string = state.theme; console.log(theme); });
+book.on('bookmarkchange', pages => { const first: number | undefined = pages[0]; console.log(first); });
+void book.ready.then(async () => { book.toggleBookmark(); const pages: number[] = book.getBookmarks(); const contents = await book.getContents(); console.log(pages, contents); });
 book.goToPage(1); book.destroy();
 `,
 );
@@ -64,7 +68,7 @@ await cp(dist, resolve(site, 'nested/lib'), { recursive: true });
 await cp('tests/fixtures/magazine.pdf', resolve(site, 'nested/catalog.pdf'));
 await writeFile(
   resolve(site, 'nested/index.html'),
-  `<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>Plain module consumer</title><link rel="stylesheet" href="./lib/folio3d.css"></head><body><div id="book" style="width:900px;height:650px"></div><script type="module">import{createFlipbook}from'./lib/folio3d.js';window.book=createFlipbook(document.querySelector('#book'),{source:{type:'pdf',data:'./catalog.pdf'},renderer:'flat'});window.book.ready.catch(()=>{});</script></body></html>`,
+  `<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>Plain module consumer</title><link rel="stylesheet" href="./lib/folio3d.css"></head><body><div id="book" style="width:900px;height:650px"></div><script type="module">import{createFlipbook}from'./lib/folio3d.js';window.book=createFlipbook(document.querySelector('#book'),{source:{type:'pdf',data:'./catalog.pdf'},renderer:'flat',theme:'modern',storageKey:'package-smoke'});window.book.ready.catch(()=>{});</script></body></html>`,
 );
 await cp(resolve(dist, 'assets'), resolve(consumer, 'public/assets'), { recursive: true });
 await cp('tests/fixtures/magazine.pdf', resolve(consumer, 'public/catalog.pdf'));

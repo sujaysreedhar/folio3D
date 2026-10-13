@@ -35,6 +35,15 @@
             ><button id="pdf" aria-pressed="false">Sample PDF</button>
           </div>
           <div class="actions">
+            <label class="theme-picker" for="reader-theme"
+              >Theme
+              <select id="reader-theme">
+                <option value="modern" selected>Modern</option>
+                <option value="classic">Classic</option>
+                <option value="sepia">Sepia</option>
+                <option value="midnight">Midnight</option>
+              </select>
+            </label>
             <label class="upload" for="file">Open your PDF <span aria-hidden="true">↗</span></label
             ><input
               id="file"
@@ -46,7 +55,7 @@
         </div>
         <div id="book" class="book-mount"></div>
         <div class="book-caption">
-          <p>Grab a page and drag to turn. Toggle the paper sound in the toolbar.</p>
+          <p>Drag to turn. Browse pages and contents, or bookmark a place to return to.</p>
           <span id="publication-status" role="status">Opening the image book…</span>
         </div>
       </section>
@@ -122,6 +131,11 @@
             own hosting.
           </p>
           <a class="text-link" href="./README.txt">Read the complete documentation ↗</a>
+          <p>
+            <a class="text-link" href="https://github.com/sujaysreedhar/folio3D/releases/latest"
+              >Download the latest release ↗</a
+            >
+          </p>
         </div>
         <div class="code-example">
           <div class="code-heading">
@@ -138,7 +152,12 @@ book.goToPage(4);
 
 // When the view unmounts
 book.destroy();</code></pre>
-          <p>Load the stylesheet and keep the distribution’s assets together.</p>
+          <p>
+            Load the stylesheet and keep the distribution’s assets together.
+            <a href="https://github.com/sujaysreedhar/folio3D/blob/main/docs/PUBLISHING.md"
+              >CDN &amp; publishing guide ↗</a
+            >
+          </p>
         </div>
       </section>
       <section class="principles" aria-label="Made for the open web">

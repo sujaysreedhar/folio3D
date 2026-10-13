@@ -20,6 +20,9 @@ const book = createFlipbook(mount, {
   label: publication.title,
   assetBaseUrl,
   pageMode,
+  contents: publication.sections,
+  storageKey: `demo:${publication.title}:v1`,
+  theme: isPortfolio ? 'modern' : 'sepia',
 });
 const buttons = publication.sections.map((section) => {
   const button = document.createElement('button');

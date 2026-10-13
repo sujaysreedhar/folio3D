@@ -8,6 +8,13 @@ for (const path of ['/nested/', '/npm/'])
     await expect(page.getByRole('spinbutton', { name: 'Page number' })).toHaveValue('1');
     await page.getByRole('button', { name: 'Next page', exact: true }).click();
     await expect(page.getByRole('spinbutton', { name: 'Page number' })).toHaveValue('2');
+    await page.getByRole('button', { name: 'Browse book' }).click();
+    await expect(page.locator('.folio3d-thumbnails canvas')).toHaveCount(6);
+    await page.getByRole('button', { name: 'Close navigation' }).click();
+    await page.getByRole('button', { name: 'Bookmark this page', exact: true }).click();
+    await expect(
+      page.getByRole('button', { name: 'Remove bookmark for this page' }),
+    ).toHaveAttribute('aria-pressed', 'true');
     expect(errors).toEqual([]);
   });
 test('missing worker assets produce a visible useful failure', async ({ page, context }) => {
@@ -42,4 +49,32 @@ test('mobile showcase fits the viewport', async ({ page }, info) => {
   await expect(page.locator('.folio3d')).toHaveAttribute('data-status', 'ready');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: `artifacts/demo-${info.project.name}-390.png`, fullPage: true });
+});
+
+test('theme selector updates the production reader and lightbox', async ({ page }, info) => {
+  await page.goto('/showcase/');
+  await expect(page.locator('.folio3d')).toHaveAttribute('data-status', 'ready');
+  for (const theme of ['classic', 'modern', 'sepia', 'midnight']) {
+    await page.getByRole('combobox', { name: 'Theme', exact: true }).selectOption(theme);
+    await expect(page.locator('.folio3d')).toHaveAttribute('data-theme', theme);
+    if (theme === 'midnight') {
+      await expect(page.locator('.folio3d-toolbar')).toHaveCSS(
+        'background-color',
+        'rgb(37, 33, 46)',
+      );
+      await expect(page.locator('.folio3d')).toHaveCSS('background-color', 'rgb(23, 20, 30)');
+    }
+    await page.getByRole('button', { name: 'Browse book' }).click();
+    await expect(page.locator('.folio3d-thumbnails canvas')).toHaveCount(6);
+    await page
+      .locator('#book')
+      .screenshot({ path: `artifacts/theme-${theme}-${info.project.name}.png` });
+    await page.getByRole('button', { name: 'Close navigation' }).click();
+  }
+  await page.getByRole('button', { name: 'Open lightbox' }).click();
+  await expect(page.getByRole('dialog')).toHaveAttribute('data-theme', 'midnight');
+  await expect(page.getByRole('dialog').locator('.folio3d')).toHaveAttribute(
+    'data-theme',
+    'midnight',
+  );
 });

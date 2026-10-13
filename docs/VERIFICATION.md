@@ -1,4 +1,20 @@
-# Folio3D 0.1.0 verification — 2026-10-12
+# Folio3D verification
+
+## Version 0.2.0 — 2026-10-13
+
+Reader navigation (six-at-a-time thumbnails, PDF/custom contents, bookmarks), four themes, demo integration and GitHub/CDN packaging were checked locally on the same Windows browser matrix below.
+
+- TypeScript, library/demo production builds and all 16 unit tests passed.
+- Full browser run: **294 passed, 12 intentional skips**. After review fixes for bookmark synchronization and thumbnail budget accounting, the focused navigation suite passed **66/66** across Chromium, Firefox and WebKit desktop/touch configurations.
+- Production demo applications: **48/48 passed**.
+- Actual packed npm and nested plain-module consumers: **36/36 passed**, including PDF thumbnails, bookmarks, all four themes, matching lightbox theme, mobile overflow and missing-worker errors. Vanilla TypeScript declarations also passed without Vite ambient types.
+- Theme screenshots were captured in every configuration. Modern desktop/mobile and Midnight desktop were visually inspected. An older demo background override that obscured Midnight contrast was removed; its toolbar/stage colors now have explicit regression checks.
+- Independent core review identified focus loss when pagination/removal replaced controls and stale same-document bookmark overwrites. Both were reproduced, fixed and covered. Thumbnails now reserve a bounded portion of `memoryBudgetMB`; the 1 MiB case passed with reader and thumbnail allocations summed.
+- Dependency audit after pinning the ZIP builder to fflate 0.8.3: zero reported vulnerabilities.
+
+Archives are built by `npm run release`; `npm run publish:github -- --dry-run` validates their SHA-256 checksums and prints the intended repository/tag/assets without publishing. Actual hosted release/CDN status must be checked separately from these local checks. Physical phones, real iOS Safari and hardware-GPU frame rates remain unverified. The optional release workflow is supplied as a template in `docs/` because the current GitHub login cannot install workflows; it has not been claimed as a hosted CI pass.
+
+## Version 0.1.0 — 2026-10-12
 
 Verified local release. Original MIT code, original sample publications and no public deployment or npm publishing. The approved scope is recorded in PLAN.md; PROGRESS.md records milestone evidence and implementation rulings.
 

@@ -1,16 +1,28 @@
 {
   "name": "folio3d",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A browser-only, curved 3D PDF and image flipbook",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sujaysreedhar/folio3D.git"
+  },
+  "homepage": "https://folio3d.sujaysreedhar.com",
+  "bugs": {
+    "url": "https://github.com/sujaysreedhar/folio3D/issues"
+  },
+  "jsdelivr": "dist/folio3d.js",
+  "unpkg": "dist/folio3d.js",
   "files": [
     "dist",
     "README.md",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md",
     "CHANGELOG.md",
-    "docs/VERIFICATION.md"
+    "docs/VERIFICATION.md",
+    "docs/PUBLISHING.md",
+    "docs/THEMES.md"
   ],
   "main": "./dist/folio3d.js",
   "module": "./dist/folio3d.js",
@@ -32,12 +44,13 @@
     "test": "vitest run",
     "test:browser": "playwright test",
     "test:demos": "playwright test --config playwright.demos.config.ts",
-    "fixtures": "node scripts/fixtures.mjs",
+    "fixtures": "node scripts/fixtures.mjs && node scripts/outline-fixture.mjs",
     "demo:assets": "node scripts/demo-assets.mjs",
     "build": "vite build && tsc -p tsconfig.build.json && node scripts/copy-assets.mjs",
     "build:demo": "vite build --config vite.demo.config.ts",
     "preview": "node scripts/serve.mjs",
     "release": "npm run build && npm run build:demo && node scripts/release.mjs",
+    "publish:github": "node scripts/publish-github.mjs",
     "prepare:package": "node scripts/package-smoke.mjs",
     "test:package": "npm run prepare:package && playwright test --config playwright.package.config.ts"
   },
@@ -52,6 +65,7 @@
     "@playwright/test": "1.63.0",
     "@types/node": "26.6.5",
     "@types/three": "0.186.0",
+    "fflate": "0.8.3",
     "pdf-lib": "1.17.1",
     "prettier": "3.9.10",
     "typescript": "7.0.2",
