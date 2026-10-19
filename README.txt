@@ -11,6 +11,8 @@ Turn PDFs and images into interactive 3D flipbooks for catalogs, magazines, port
 - Responsive single-page and two-page layouts, zoom, pan and fullscreen where supported.
 - Inline viewers and modal lightboxes, with keyboard and pointer navigation.
 - Optional page-turn sound with a mute control in the reader toolbar.
+- Page thumbnails, nested PDF/custom contents, and bookmarks with optional browser persistence.
+- Eight themes: Classic, Modern, Sepia, Midnight, Ocean, Forest, Slate and High Contrast. Switch themes or apply custom colors/fonts without reopening the book.
 - Browser-only document processing. Local files stay on your device; no backend, account or upload is required.
 - Plain HTML and npm/bundler integration, with self-hosted PDF workers and support assets.
 
@@ -69,6 +71,35 @@ Relative build paths support hosting at the domain root or in a subdirectory. Se
 
 ## Plain HTML / browser modules
 
+### Use the CDN
+
+The versioned GitHub release is available through jsDelivr. Keep the JavaScript and CSS on the same version:
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/sujaysreedhar/folio3D@v0.3.0/dist/folio3d.min.css"
+/>
+<div id="book" style="height:600px"></div>
+<script type="module">
+  import { createFlipbook } from 'https://cdn.jsdelivr.net/gh/sujaysreedhar/folio3D@v0.3.0/dist/folio3d.min.js';
+  const book = createFlipbook(document.querySelector('#book'), {
+    source: { type: 'pdf', data: './catalog.pdf' },
+    theme: 'modern',
+    storageKey: 'catalog-2026-v1',
+  });
+  await book.ready;
+</script>
+```
+
+Worker and support assets resolve from the same CDN version automatically. Cross-origin workers need `worker-src blob:` when a Content Security Policy is in use; see [publishing and CSP notes](docs/PUBLISHING.md).
+
+The `.min.js` entry and its lazy PDF chunks are fully minified. The `.min.css` file is an explicit alias for the already-minified stylesheet. Regular `folio3d.js` / `folio3d.css` files remain available. Preserve the entire `dist/` directory when self-hosting, including `chunks/min/`, worker assets and licenses.
+
+### Download and self-host
+
+Get the [browser ZIP](https://github.com/sujaysreedhar/folio3D/releases/download/v0.3.0/folio3d-0.3.0-browser.zip), [website ZIP](https://github.com/sujaysreedhar/folio3D/releases/download/v0.3.0/folio3d-0.3.0-website.zip), or [all release assets and checksums](https://github.com/sujaysreedhar/folio3D/releases/tag/v0.3.0). The browser ZIP includes `example.html` and a sample PDF; serve it over HTTP(S).
+
 Copy the entire `dist` directory to `lib` on your static server. Preserve `chunks`, `assets` and license files alongside the entry point. No CDN or runtime package resolution is needed.
 
 ```html
@@ -89,12 +120,18 @@ The viewer fills its container. Set a positive height; width is responsive. Defa
 
 ## npm / bundler integration
 
-This project has not been published. Build a local package and install that specific archive:
+Install the downloadable GitHub package directly. This release does not require npm registry publication:
+
+```sh
+npm install https://github.com/sujaysreedhar/folio3D/releases/download/v0.3.0/folio3d-0.3.0.tgz
+```
+
+Or build and install a local archive:
 
 ```sh
 npm run release
 # In your consuming project:
-npm install /path/to/folio3d/artifacts/folio3d-0.1.0.tgz
+npm install /path/to/folio3d/artifacts/folio3d-0.3.0.tgz
 ```
 
 ```ts
@@ -117,6 +154,8 @@ await cp('node_modules/folio3d/dist/assets', 'public/folio-assets', { recursive:
 
 Serve these assets unchanged from the **same installed version** as the main package. Include their license files when redistributing. `assetBaseUrl` may be an absolute URL or a page-relative path. PDF.js is loaded lazily; image-only books do not load PDF chunks or start PDF workers.
 
+An explicit minified npm entry is also available as `import { createFlipbook } from 'folio3d/min'`, with `import 'folio3d/style.min.css'`. Both use the same TypeScript declarations. The default `folio3d` entry retains annotations useful to application bundlers.
+
 ## Sources and options
 
 ```ts
@@ -132,16 +171,20 @@ Serve these assets unchanged from the **same installed version** as the main pac
 
 Caller-owned byte arrays are copied before PDF.js receives them. URLs follow normal browser CORS rules. Local files are read on the device. The current canvas reader announces page numbers; image `alt` metadata is retained in the source contract for future text-based presentation, but is not a substitute for accessible document content. PDFs have an Original PDF link for the native reader.
 
-| Option           | Default                | Meaning                                                              |
-| ---------------- | ---------------------- | -------------------------------------------------------------------- |
-| `renderer`       | `auto`                 | `auto`, `webgl`, `flat`; unavailable/lost WebGL falls back to flat   |
-| `pageMode`       | `auto`                 | `auto`, `single`, `double`; auto switches below 720 container pixels |
-| `initialPage`    | `1`                    | One-based starting page                                              |
-| `assetBaseUrl`   | Distribution-relative  | Directory containing worker, cmaps, standard_fonts, wasm             |
-| `memoryBudgetMB` | `96`                   | Owned raster/texture allocation budget; minimum 1 MiB                |
-| `duration`       | `600`                  | Full page-turn duration in milliseconds; zero is immediate           |
-| `sound`          | `false`                | Enable synthesized page-turn audio after a user interaction          |
-| `label`          | `Interactive flipbook` | Accessible region/dialog name                                        |
+| Option           | Default                | Meaning                                                                                   |
+| ---------------- | ---------------------- | ----------------------------------------------------------------------------------------- |
+| `renderer`       | `auto`                 | `auto`, `webgl`, `flat`; unavailable/lost WebGL falls back to flat                        |
+| `pageMode`       | `auto`                 | `auto`, `single`, `double`; auto switches below 720 container pixels                      |
+| `initialPage`    | `1`                    | One-based starting page                                                                   |
+| `assetBaseUrl`   | Distribution-relative  | Directory containing worker, cmaps, standard_fonts, wasm                                  |
+| `memoryBudgetMB` | `96`                   | Owned raster/texture allocation budget; minimum 1 MiB                                     |
+| `duration`       | `600`                  | Full page-turn duration in milliseconds; zero is immediate                                |
+| `sound`          | `false`                | Enable synthesized page-turn audio after a user interaction                               |
+| `label`          | `Interactive flipbook` | Accessible region/dialog name                                                             |
+| `theme`          | `classic`              | `classic`, `modern`, `sepia`, `midnight`, `ocean`, `forest`, `slate`, `high-contrast`     |
+| `themeOverrides` | `{}`                   | Partial `ThemeTokens`: ink, paper, stage, muted, border, hover, accent, font              |
+| `contents`       | PDF outline or empty   | Nested `{ title, page?, children? }` entries; overrides PDF contents                      |
+| `storageKey`     | unset                  | Unique document/version key for persistent local bookmarks; unset keeps them per instance |
 
 Zoom is clamped to 1×–3×. Texture edges are capped at 2048 pixels and DPR at 2. Pages of different sizes/rotations fit the first page's book dimensions with white letterboxing. Double mode starts blank|1, then 2|3 and 4|5. Blank partners do not change the page count. Single mode moves one page at a time.
 
@@ -153,8 +196,12 @@ Sound uses Web Audio without downloaded audio files. Set `sound: true` to enable
 - `next()`, `previous()`, `goToPage(page)` navigate. Await `ready` before page-range-dependent operations. Calls during initialization wait; during a turn, the latest pending target wins. Boundaries do nothing; invalid pages throw `RangeError` after count is known. Direct nonadjacent jumps are immediate after loading.
 - `setZoom(scale)`, `resetZoom()` change the view. Turns reset zoom; zoom requested during a turn applies after settlement. Dragging pans while zoomed; dragging a page turns it at fit. Short drags reverse; edge taps also navigate.
 - `setSound(enabled)` enables or mutes the page-turn sound. The toolbar also provides a sound toggle; browser audio permissions require a user interaction before playback.
-- `getState()` returns a snapshot: `page`, `pageCount`, `visiblePages`, `zoom`, `sound`, resolved `pageMode`, `renderer`, and `status` (`loading`, `ready`, `turning`, `error`, `destroyed`).
-- `on('pagechange' | 'zoomchange' | 'rendererchange' | 'soundchange', callback)` delivers state snapshots. `on('error', callback)` delivers an `Error`. Both return an unsubscribe function. Initial state is available via `ready`/`getState()`.
+- `setTheme(theme)` switches the reader and lightbox appearance. Additional preset IDs are `ocean`, `forest`, `slate`, and `high-contrast`. Custom overrides persist when switching presets. Theme colors do not recolor document pages; see [theme tokens](docs/THEMES.md).
+- `setThemeOverrides(overrides)` replaces the custom token map; `{}` restores host CSS and the current preset. The same tokens apply to the lightbox header. Unknown tokens and invalid CSS values throw before changing the current theme.
+- `getContents()` resolves nested contents after `ready`. PDF named and explicit internal destinations are resolved to one-based pages; external or invalid destinations remain labels. Contents trees are limited to 33 levels. A failed contents lookup can be retried.
+- `getBookmarks()` returns a sorted copy. `toggleBookmark(page?)` adds/removes a page (defaults to current); await `ready` first. Active same-key readers synchronize, and other tabs receive browser storage events. Storage failure falls back to session state. Persistence is origin-local, never an upload or cross-device sync. Use a new key when changing a document's page ordering; local demo file uploads use session bookmarks.
+- `getState()` returns a snapshot: `page`, `pageCount`, `visiblePages`, `zoom`, `sound`, `theme`, copied `themeOverrides`, resolved `pageMode`, `renderer`, and `status` (`loading`, `ready`, `turning`, `error`, `destroyed`).
+- `on('pagechange' | 'zoomchange' | 'rendererchange' | 'soundchange' | 'themechange', callback)` delivers state snapshots. `on('bookmarkchange', callback)` delivers sorted page numbers; `on('error', callback)` delivers an `Error`. All return an unsubscribe function. Initial state is available via `ready`/`getState()`.
 - `destroy()` is idempotent. It aborts loading/render work, terminates owned PDF workers, disconnects observers/listeners, cancels animation/timers, closes audio, releases textures/canvases/URLs and removes the viewer. Destroy during loading rejects `ready` with `AbortError`.
 
 ```ts
@@ -167,15 +214,17 @@ book.on('error', (error) => console.error(error.message));
 
 Keyboard shortcuts apply only inside the focused viewer: Left/Right, Home/End, +/−, and 0 to fit. Form inputs retain their normal keyboard behavior. Pointer capture and cancellation are supported. Auto rendering respects reduced motion; explicit `webgl` opts into motion.
 
+Below 720 reader pixels, the toolbar keeps navigation visible and puts zoom, fit, sound, bookmarks, fullscreen and Original PDF inside **More**. Escape closes More and restores focus. Controls use at least 44px touch targets. Three.js is loaded only for readers needing WebGL; flat and reduced-motion readers skip the renderer chunk.
+
 ## Hosting, memory and compatibility
 
 Serve cross-origin PDFs/images with appropriate CORS response headers. PDF.js can use HTTP range requests when the source server permits them; otherwise it may download the entire PDF. No proxy is included. A CSP must permit your module scripts, source fetches, same-origin module workers and the image Blob URLs used for decoding; image decoding needs `img-src blob:`. Some PDF encoders use WebAssembly decoders; permit those according to your CSP deployment policy.
 
-The 96 MiB budget conservatively accounts for owned canvas pixels plus matching GPU texture capacity, including reserved in-flight surfaces. It does **not** bound the source file, browser decoder buffers, PDF.js internals, driver overhead, geometry/shadow maps, or total tab memory. At most two raster tasks run concurrently. Visible pages have priority, adjacent pages prefetch; unneeded cached pages are evicted. Displayed surfaces stay protected until a replacement succeeds. Lower budgets/resolution limits can reduce visual sharpness. No rendering loop runs while the book is idle.
+The 96 MiB budget conservatively accounts for owned canvas pixels plus matching GPU texture capacity, including reserved in-flight surfaces. It does **not** bound the source file, browser decoder buffers, PDF.js internals, driver overhead, geometry/shadow maps, or total tab memory. Up to 0.88 MiB (at most one eighth of the configured budget) is reserved for six thumbnails, capped at 120×160 each and scaled down for small budgets. Closing/changing the navigation view releases its canvases. At most two reader raster tasks and one serialized thumbnail task run concurrently. Visible reader pages have priority, adjacent pages prefetch; unneeded cached pages are evicted. Displayed surfaces stay protected until a replacement succeeds. Lower budgets/resolution limits can reduce visual sharpness. No rendering loop runs while the book is idle.
 
 Target modern Chrome/Edge, Firefox and Safari with ES modules, Pointer Events and ResizeObserver. WebGL2 provides 3D; flat mode still supports navigation/zoom. Fullscreen appears only when supported. Playwright WebKit is an engine check, not proof of real iOS device behavior. See [the verification report](docs/VERIFICATION.md) for tested versions, results and remaining limitations.
 
-Not included in v0.1: search, thumbnails, outlines, selectable PDF text, interactive annotations, password-protected PDFs, RTL, hard covers, autoplay, framework/WordPress wrappers or DearFlip compatibility. Page curl is deterministic geometry, not a paper physics simulation.
+Not included in v0.2: search, selectable PDF text, interactive annotations, password-protected PDFs, RTL, hard covers, autoplay, framework/WordPress wrappers or DearFlip compatibility. Page curl is deterministic geometry, not a paper physics simulation.
 
 ## Develop and verify
 

@@ -1,4 +1,4 @@
-import type { Flipbook, FlipbookOptions, FlipbookState, FlipbookEvents } from './types';
+import type { Flipbook, FlipbookOptions, FlipbookState, FlipbookEvents, Theme, ThemeTokens, ContentsEntry } from './types';
 export declare class FlipbookController implements Flipbook {
     private options;
     private assetBase;
@@ -7,11 +7,15 @@ export declare class FlipbookController implements Flipbook {
     private readonly ui;
     private readonly observer;
     private readonly sound;
+    private readonly navigation;
+    private bookmarks?;
+    private contentsPromise?;
     private readonly motion;
     private events;
     private provider?;
     private scheduler?;
     private renderer?;
+    private WebGLRenderer?;
     private size;
     private view?;
     private state;
@@ -20,9 +24,12 @@ export declare class FlipbookController implements Flipbook {
     private pending?;
     private pendingZoom?;
     private target?;
+    private lastDirection;
     private turn?;
     private gesture?;
     private raf;
+    private resizeFrame;
+    private statusTimer;
     private zoomTimer;
     private refreshAfterPan;
     private panX;
@@ -31,11 +38,13 @@ export declare class FlipbookController implements Flipbook {
     private height;
     constructor(container: HTMLElement, options: FlipbookOptions, assetBase: string);
     private alive;
+    private updateUI;
     private checkAlive;
     private emit;
     on<K extends keyof FlipbookEvents>(event: K, listener: (data: FlipbookEvents[K]) => void): () => void;
     getState(): FlipbookState;
     private initialize;
+    private loadRenderer;
     private createRenderer;
     private measure;
     private rasterSize;
@@ -43,6 +52,8 @@ export declare class FlipbookController implements Flipbook {
     private cancelTurn;
     private refresh;
     private resize;
+    private preparing;
+    private clearStatus;
     private fallback;
     private motionChanged;
     private fail;
@@ -59,6 +70,11 @@ export declare class FlipbookController implements Flipbook {
     private applyPendingZoom;
     resetZoom(): void;
     setSound(enabled: boolean): void;
+    setTheme(theme: Theme): void;
+    setThemeOverrides(overrides: Partial<ThemeTokens>): void;
+    getBookmarks(): number[];
+    toggleBookmark(page?: number): void;
+    getContents(): Promise<ContentsEntry[]>;
     private action;
     private keydown;
     private pointer;

@@ -1,6 +1,22 @@
 export type PageMode = 'auto' | 'single' | 'double';
 export type ResolvedPageMode = Exclude<PageMode, 'auto'>;
 export type RendererMode = 'auto' | 'webgl' | 'flat';
+export type Theme = 'classic' | 'modern' | 'sepia' | 'midnight' | 'ocean' | 'forest' | 'slate' | 'high-contrast';
+export interface ThemeTokens {
+    ink: string;
+    paper: string;
+    stage: string;
+    muted: string;
+    border: string;
+    hover: string;
+    accent: string;
+    font: string;
+}
+export interface ContentsEntry {
+    title: string;
+    page?: number;
+    children?: ContentsEntry[];
+}
 export type Source = {
     type: 'pdf';
     data: string | Blob | Uint8Array;
@@ -21,6 +37,11 @@ export interface FlipbookOptions {
     duration?: number;
     sound?: boolean;
     label?: string;
+    theme?: Theme;
+    themeOverrides?: Partial<ThemeTokens>;
+    contents?: ContentsEntry[];
+    /** Opt in to local bookmark persistence with a unique document/version key. */
+    storageKey?: string;
 }
 export interface FlipbookState {
     page: number;
@@ -28,6 +49,8 @@ export interface FlipbookState {
     visiblePages: (number | null)[];
     zoom: number;
     sound: boolean;
+    theme: Theme;
+    themeOverrides: Partial<ThemeTokens>;
     pageMode: ResolvedPageMode;
     renderer: Exclude<RendererMode, 'auto'>;
     status: 'loading' | 'ready' | 'turning' | 'error' | 'destroyed';
@@ -37,6 +60,8 @@ export interface FlipbookEvents {
     zoomchange: FlipbookState;
     rendererchange: FlipbookState;
     soundchange: FlipbookState;
+    themechange: FlipbookState;
+    bookmarkchange: number[];
     error: Error;
 }
 export interface Flipbook {
@@ -47,6 +72,11 @@ export interface Flipbook {
     setZoom(scale: number): void;
     resetZoom(): void;
     setSound(enabled: boolean): void;
+    setTheme(theme: Theme): void;
+    setThemeOverrides(overrides: Partial<ThemeTokens>): void;
+    getContents(): Promise<ContentsEntry[]>;
+    getBookmarks(): number[];
+    toggleBookmark(page?: number): void;
     getState(): FlipbookState;
     on<K extends keyof FlipbookEvents>(event: K, listener: (data: FlipbookEvents[K]) => void): () => void;
     destroy(): void;
@@ -65,5 +95,6 @@ export interface DocumentProvider {
     readonly pageCount: number;
     size(page: number, signal: AbortSignal): Promise<PageSize>;
     render(page: number, size: PageSize, signal: AbortSignal): Promise<PageSurface>;
+    contents?(signal: AbortSignal): Promise<ContentsEntry[]>;
     dispose(): void;
 }

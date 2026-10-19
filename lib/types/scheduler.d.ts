@@ -6,7 +6,7 @@ export declare class RenderScheduler {
     private pending;
     private pins;
     private displayed;
-    private abort;
+    private generation;
     private active;
     private bytes;
     private reserved;
@@ -18,6 +18,7 @@ export declare class RenderScheduler {
     private key;
     prepare(pages: number[], size: PageSize): Promise<Map<number, PageSurface>>;
     prefetch(pages: number[], size: PageSize): void;
+    private wake;
     private slot;
     private evict;
     private load;
