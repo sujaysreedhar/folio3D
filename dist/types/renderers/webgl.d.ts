@@ -1,0 +1,38 @@
+import type { BookRenderer, View } from './renderer';
+export declare class WebGLBookRenderer implements BookRenderer {
+    readonly element: HTMLCanvasElement;
+    private readonly gl;
+    private readonly scene;
+    private readonly camera;
+    private readonly textures;
+    private readonly textureListeners;
+    private readonly left;
+    private readonly right;
+    private readonly front;
+    private readonly back;
+    private readonly stacks;
+    private readonly ground;
+    private width;
+    private height;
+    private ratio;
+    private single;
+    private zoom;
+    private panX;
+    private panY;
+    private shift;
+    private uvDirection?;
+    private readonly cameraLift;
+    constructor(onContextLost: () => void);
+    private onLost;
+    private lost;
+    private texture;
+    private page;
+    private retain;
+    private framing;
+    private draw;
+    resize(width: number, height: number): void;
+    show(view: View): void;
+    turn(from: View, to: View, direction: 1 | -1, progress: number): void;
+    setTransform(zoom: number, x: number, y: number): void;
+    dispose(): void;
+}
