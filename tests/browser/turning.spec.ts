@@ -136,6 +136,8 @@ test('sound is opt-in, plays on a completed turn, mutes and closes on destroy', 
   );
   await mount(page, { pageMode: 'single' });
   expect(await page.evaluate(() => (window as any).audioStats.created)).toBe(0);
+  const more = page.getByRole('button', { name: 'More controls' });
+  if (await more.isVisible()) await more.click();
   await page.getByRole('button', { name: 'Enable page-turn sound', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Mute page-turn sound' })).toHaveAttribute(
     'aria-pressed',
@@ -148,6 +150,7 @@ test('sound is opt-in, plays on a completed turn, mutes and closes on destroy', 
   await page.mouse.up();
   await selected(page, 2);
   expect(await page.evaluate(() => (window as any).audioStats.played)).toBe(1);
+  if (await more.isVisible()) await more.click();
   await page.getByRole('button', { name: 'Mute page-turn sound', exact: true }).click();
   await page.getByRole('button', { name: 'Next page', exact: true }).click();
   await selected(page, 3);

@@ -6,18 +6,19 @@ import type {
   DocumentProvider,
   PageSize,
   Theme,
+  ThemeTokens,
   ContentsEntry,
 } from './types';
 import { visiblePages, adjacentPage, resolveMode, validatePage } from './model';
 import { openDocument } from './providers';
 import { RenderScheduler } from './scheduler';
-import { WebGLBookRenderer } from './renderers/webgl';
 import { FlatBookRenderer } from './renderers/flat';
 import type { BookRenderer, View } from './renderers/renderer';
 import { ReaderUI, type Action } from './ui';
 import { PageTurnSound } from './sound';
 import { Bookmarks } from './bookmarks';
 import { ReaderNavigation } from './navigation';
+import { applyTheme, normalizeThemeOverrides, validateTheme } from './themes';
 
 interface Gesture {
   id: number;
@@ -58,6 +59,7 @@ export class FlipbookController implements Flipbook {
   private provider?: DocumentProvider;
   private scheduler?: RenderScheduler;
   private renderer?: BookRenderer;
+  private WebGLRenderer?: typeof import('./renderers/webgl').WebGLBookRenderer;
   private size: PageSize = { width: 600, height: 800 };
   private view?: View;
   private state: FlipbookState;
@@ -66,9 +68,12 @@ export class FlipbookController implements Flipbook {
   private pending?: number;
   private pendingZoom?: number;
   private target?: number;
+  private lastDirection: 1 | -1 = 1;
   private turn?: Turn;
   private gesture?: Gesture;
   private raf = 0;
+  private resizeFrame = 0;
+  private statusTimer: ReturnType<typeof setTimeout> | undefined;
   private zoomTimer: ReturnType<typeof setTimeout> | undefined;
   private refreshAfterPan = false;
   private panX = 0;
@@ -83,11 +88,8 @@ export class FlipbookController implements Flipbook {
     if (!(container instanceof HTMLElement))
       throw new TypeError('A container HTMLElement is required.');
     if (!options?.source) throw new TypeError('A PDF or image source is required.');
-    if (
-      options.theme !== undefined &&
-      !['classic', 'modern', 'sepia', 'midnight'].includes(options.theme)
-    )
-      throw new RangeError('Unknown reader theme.');
+    if (options.theme !== undefined) validateTheme(options.theme);
+    const themeOverrides = normalizeThemeOverrides(options.themeOverrides ?? {});
     if (
       options.initialPage !== undefined &&
       (!Number.isInteger(options.initialPage) || options.initialPage < 1)
@@ -110,6 +112,7 @@ export class FlipbookController implements Flipbook {
       zoom: 1,
       sound: options.sound ?? false,
       theme: options.theme ?? 'classic',
+      themeOverrides,
       pageMode: resolveMode(options.pageMode ?? 'auto', container.clientWidth),
       renderer: 'flat',
       status: 'loading',
@@ -154,6 +157,8 @@ export class FlipbookController implements Flipbook {
   }
   private updateUI(): void {
     this.ui.update(this.state);
+    const dialog = this.ui.root.closest<HTMLElement>('.folio3d-dialog');
+    if (dialog) applyTheme(dialog, this.state.theme, this.state.themeOverrides);
     this.ui.updateBookmark(this.getBookmarks().includes(this.state.page));
     this.navigation.update(this.state);
   }
@@ -174,9 +179,14 @@ export class FlipbookController implements Flipbook {
     return () => target.removeEventListener(event, wrapper);
   }
   getState(): FlipbookState {
-    return { ...this.state, visiblePages: [...this.state.visiblePages] };
+    return {
+      ...this.state,
+      visiblePages: [...this.state.visiblePages],
+      themeOverrides: { ...this.state.themeOverrides },
+    };
   }
   private async initialize(): Promise<void> {
+    const rendererReady = this.loadRenderer();
     try {
       this.provider = await openDocument(this.options.source, this.assetBase, this.lifetime.signal);
       this.checkAlive();
@@ -198,6 +208,8 @@ export class FlipbookController implements Flipbook {
       this.size = await this.provider.size(1, this.lifetime.signal);
       this.checkAlive();
       this.scheduler = new RenderScheduler(this.provider, budget - thumbnailBudget);
+      await rendererReady;
+      this.checkAlive();
       this.createRenderer();
       this.measure();
       await this.refresh();
@@ -209,6 +221,19 @@ export class FlipbookController implements Flipbook {
       throw e;
     }
   }
+  private async loadRenderer(): Promise<void> {
+    if (
+      this.options.renderer === 'flat' ||
+      (this.options.renderer !== 'webgl' && this.motion.matches)
+    )
+      return;
+    try {
+      const { WebGLBookRenderer } = await import('./renderers/webgl');
+      if (this.alive()) this.WebGLRenderer = WebGLBookRenderer;
+    } catch {
+      // Optional renderer failures preserve a usable flat reader.
+    }
+  }
   private createRenderer(forceFlat = false): void {
     this.renderer?.dispose();
     if (
@@ -217,7 +242,8 @@ export class FlipbookController implements Flipbook {
       !(this.options.renderer !== 'webgl' && this.motion.matches)
     ) {
       try {
-        this.renderer = new WebGLBookRenderer(() => this.fallback());
+        if (!this.WebGLRenderer) throw new Error('WebGL renderer unavailable.');
+        this.renderer = new this.WebGLRenderer(() => this.fallback());
         this.state.renderer = 'webgl';
       } catch {
         this.renderer = new FlatBookRenderer();
@@ -231,6 +257,7 @@ export class FlipbookController implements Flipbook {
     this.emit('rendererchange', this.getState());
   }
   private measure(): boolean {
+    this.ui.setCompact(this.ui.root.clientWidth < 720);
     const w = this.ui.stage.clientWidth,
       h = this.ui.stage.clientHeight;
     const changed = w !== this.width || h !== this.height;
@@ -277,7 +304,7 @@ export class FlipbookController implements Flipbook {
     this.cancelTurn();
     if (this.view) this.renderer.show(this.view);
     this.busy = true;
-    this.ui.status('Preparing pages…');
+    this.preparing();
     const mode = this.state.pageMode,
       raster = this.rasterSize();
     const pages = visiblePages(this.state.page, this.state.pageCount, this.state.pageMode);
@@ -302,7 +329,7 @@ export class FlipbookController implements Flipbook {
       this.state.status = 'ready';
       this.busy = false;
       this.updateUI();
-      this.ui.status('');
+      this.clearStatus();
       this.applyPendingZoom();
       this.prefetch();
       this.drain();
@@ -312,8 +339,23 @@ export class FlipbookController implements Flipbook {
     }
   }
   private resize(): void {
-    if (!this.alive()) return;
-    if (this.measure() && this.view) void this.refresh().catch(() => {});
+    if (!this.alive() || this.resizeFrame) return;
+    this.resizeFrame = requestAnimationFrame(() => {
+      this.resizeFrame = 0;
+      if (this.alive() && this.measure() && this.view) void this.refresh().catch(() => {});
+    });
+  }
+  private preparing(): void {
+    clearTimeout(this.statusTimer);
+    if (!this.view) this.ui.status('Preparing pages…');
+    else
+      this.statusTimer = setTimeout(() => {
+        if (this.alive() && this.busy) this.ui.status('Preparing pages…');
+      }, 150);
+  }
+  private clearStatus(): void {
+    clearTimeout(this.statusTimer);
+    this.ui.status('');
   }
   private fallback(): void {
     if (!this.alive() || this.state.renderer === 'flat') return;
@@ -331,6 +373,7 @@ export class FlipbookController implements Flipbook {
     if (this.options.renderer !== 'webgl' && this.motion.matches) this.fallback();
   };
   private fail(value: unknown, initial = false): void {
+    clearTimeout(this.statusTimer);
     const error = value instanceof Error ? value : new Error(String(value));
     if (error.name === 'AbortError') return;
     this.cancelTurn();
@@ -400,7 +443,7 @@ export class FlipbookController implements Flipbook {
     this.state.status = 'turning';
     this.resetZoom();
     this.updateUI();
-    this.ui.status('Preparing pages…');
+    this.preparing();
     const surfaces = await this.scheduler.prepare(
       [...new Set([...fromPages, ...toPages].filter((n): n is number => n !== null))],
       this.rasterSize(),
@@ -415,7 +458,7 @@ export class FlipbookController implements Flipbook {
       gesture,
     };
     this.turn = turn;
-    this.ui.status('');
+    this.clearStatus();
     const adjacent = adjacentPage(
       this.state.page,
       this.state.pageCount,
@@ -444,6 +487,10 @@ export class FlipbookController implements Flipbook {
       started = performance.now();
     const duration =
       this.state.renderer === 'flat' ? 0 : (this.options.duration ?? 600) * Math.abs(end - start);
+    if (duration === 0) {
+      this.complete(turn, end === 1);
+      return;
+    }
     const tick = (time: number) => {
       if (!this.alive() || this.turn !== turn) return;
       const t = duration === 0 ? 1 : Math.min(1, (time - started) / duration),
@@ -456,21 +503,23 @@ export class FlipbookController implements Flipbook {
         this.complete(turn, end === 1);
       }
     };
-    if (duration === 0) tick(started);
-    else this.raf = requestAnimationFrame(tick);
+    this.raf = requestAnimationFrame(tick);
   }
   private complete(turn: Turn, commit: boolean): void {
     if (!this.alive() || this.turn !== turn) return;
     this.view = commit ? turn.to : turn.from;
     this.scheduler!.retainView(this.view.surfaces.values());
-    if (commit) this.state.page = turn.target;
+    if (commit) {
+      this.state.page = turn.target;
+      this.lastDirection = turn.direction;
+    }
     this.state.visiblePages = [...this.view.pages];
     this.state.status = 'ready';
     this.renderer!.show(this.view);
     this.cancelTurn();
     this.busy = false;
     this.updateUI();
-    this.ui.status('');
+    this.clearStatus();
     this.applyPendingZoom();
     if (commit) {
       if (turn.from.pages.join() !== turn.to.pages.join()) this.sound.play();
@@ -482,9 +531,23 @@ export class FlipbookController implements Flipbook {
   private prefetch(): void {
     this.scheduler?.prefetch(
       [
-        adjacentPage(this.state.page, this.state.pageCount, this.state.pageMode, -1),
-        adjacentPage(this.state.page, this.state.pageCount, this.state.pageMode, 1),
-      ],
+        ...new Set(
+          [
+            adjacentPage(
+              this.state.page,
+              this.state.pageCount,
+              this.state.pageMode,
+              this.lastDirection,
+            ),
+            adjacentPage(
+              this.state.page,
+              this.state.pageCount,
+              this.state.pageMode,
+              -this.lastDirection as 1 | -1,
+            ),
+          ].flatMap((page) => visiblePages(page, this.state.pageCount, this.state.pageMode)),
+        ),
+      ].filter((page): page is number => page !== null),
       this.rasterSize(),
     );
   }
@@ -518,9 +581,10 @@ export class FlipbookController implements Flipbook {
     this.refreshAfterPan = false;
     this.pendingZoom = undefined;
     const changed = this.state.zoom !== 1;
+    const transformed = changed || this.panX !== 0 || this.panY !== 0;
     this.state.zoom = 1;
     this.panX = this.panY = 0;
-    this.renderer?.setTransform(1, 0, 0);
+    if (transformed) this.renderer?.setTransform(1, 0, 0);
     if (changed) this.emit('zoomchange', this.getState());
     this.updateUI();
   }
@@ -533,12 +597,23 @@ export class FlipbookController implements Flipbook {
     this.emit('soundchange', this.getState());
   }
   setTheme(theme: Theme): void {
-    if (!['classic', 'modern', 'sepia', 'midnight'].includes(theme))
-      throw new RangeError('Unknown reader theme.');
+    validateTheme(theme);
     if (!this.alive() || this.state.theme === theme) return;
     this.state.theme = theme;
     this.updateUI();
-    this.ui.root.closest<HTMLElement>('.folio3d-dialog')?.setAttribute('data-theme', theme);
+    this.emit('themechange', this.getState());
+  }
+  setThemeOverrides(overrides: Partial<ThemeTokens>): void {
+    const next = normalizeThemeOverrides(overrides);
+    if (!this.alive()) return;
+    const previous = this.state.themeOverrides;
+    if (
+      Object.keys(next).length === Object.keys(previous).length &&
+      Object.entries(next).every(([key, value]) => previous[key as keyof ThemeTokens] === value)
+    )
+      return;
+    this.state.themeOverrides = next;
+    this.updateUI();
     this.emit('themechange', this.getState());
   }
   getBookmarks(): number[] {
@@ -732,6 +807,8 @@ export class FlipbookController implements Flipbook {
     this.observer.disconnect();
     this.cancelTurn();
     clearTimeout(this.zoomTimer);
+    clearTimeout(this.statusTimer);
+    cancelAnimationFrame(this.resizeFrame);
     this.scheduler?.dispose();
     this.provider?.dispose();
     this.renderer?.dispose();

@@ -1,6 +1,6 @@
 {
   "name": "folio3d",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A browser-only, curved 3D PDF and image flipbook",
   "type": "module",
   "license": "MIT",
@@ -22,7 +22,8 @@
     "CHANGELOG.md",
     "docs/VERIFICATION.md",
     "docs/PUBLISHING.md",
-    "docs/THEMES.md"
+    "docs/THEMES.md",
+    "docs/PERFORMANCE.md"
   ],
   "main": "./dist/folio3d.js",
   "module": "./dist/folio3d.js",

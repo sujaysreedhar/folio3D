@@ -91,10 +91,13 @@ test('reading room opens each publication and restores focus on close', async ({
     await dialog.getByRole('button', { name: 'Next page', exact: true }).click();
     await expect(dialog.getByRole('spinbutton', { name: 'Page number' })).toHaveValue('2');
     if (title === 'Fieldnotes magazine') {
+      const more = dialog.getByRole('button', { name: 'More controls' });
+      if (await more.isVisible()) await more.click();
       await expect(dialog.getByRole('link', { name: 'Original PDF' })).toHaveAttribute(
         'href',
         /\/samples\/magazine\.pdf$/,
       );
+      if (await more.isVisible()) await page.keyboard.press('Escape');
     }
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);

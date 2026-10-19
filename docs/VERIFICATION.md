@@ -1,5 +1,15 @@
 # Folio3D verification
 
+## Version 0.3.0 — 2026-10-19
+
+Final local verification passed: strict type checking, **21 unit tests**, both production builds, **390 browser checks with 12 intentional skips**, **48 production-demo checks**, and **54 packed-package checks**. The browser matrix covers Chromium, Firefox and WebKit at desktop and 390px touch configurations; dedicated reader controls also run at 320px. Packed TypeScript declarations compile without Vite ambient types.
+
+Coverage includes all eight presets, copied/runtime overrides, host inline CSS preservation and restoration, modal header font/color parity, CSS precedence, contrast, lazy renderer failure and destruction, priority prefetch reuse, concurrent cache bounds, low-memory thumbnails, responsive controls and keyboard/focus behavior. Independent review found four reproducible issues; each was covered by a failing regression and corrected. A WebKit pointer/focus behavior was also reproduced and fixed. The focused review follow-up passed 22/22 in Chromium and WebKit before the full final matrix.
+
+The deployment smoke test passed against the production build on desktop and mobile: all eight themes, dynamic embedding examples, custom palette, actual WebGL, PDF navigation/workers, thumbnails, lightbox state and all three example routes. The same script, `scripts/verify-site.mjs`, is used after GitHub Pages publication. The configured Pages source was read from GitHub: `docs` branch, root `/`, custom domain `folio3d.sujaysreedhar.com`.
+
+Matched measurements and their hardware/measurement limits are in [PERFORMANCE.md](PERFORMANCE.md). Raw benchmark reports are retained with local release evidence. Physical phone and real iOS Safari behavior remain outside the desktop emulation matrix.
+
 ## Version 0.2.1 — 2026-10-13
 
 Added a separate minified ES module graph and `.min.css` alias without changing runtime source. The initial missing-file regression failed with HTTP 404 before implementation. Final typecheck, 16 unit tests and production library/demo builds passed; **54/54 packed-package checks passed** across Chromium, Firefox and WebKit at desktop/touch sizes. The checks exercise regular and minified PDF consumers, navigation, thumbnails, bookmarks, worker failures, themes, minified lazy imports and actual WebGL page turns. The `/min` TypeScript declarations compile without Vite ambient types.
@@ -54,15 +64,15 @@ The mobile configurations emulate viewport size and touch input on this Windows 
 
 ## Final checks
 
-| Command                                                                          | Observed result                                                            |
-| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `npm run typecheck`                                                              | Passed, strict source/demo/test type checking                              |
-| `npm test`                                                                       | 16 passed in 3 files                                                       |
-| `npm run build`                                                                  | Passed, ESM, declarations, CSS, matching worker/support assets             |
-| `npm run build:demo`                                                             | Passed, static consumer showcase                                           |
+| Command                                                                          | Observed result                                                          |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `npm run typecheck`                                                              | Passed, strict source/demo/test type checking                            |
+| `npm test`                                                                       | 16 passed in 3 files                                                     |
+| `npm run build`                                                                  | Passed, ESM, declarations, CSS, matching worker/support assets           |
+| `npm run build:demo`                                                             | Passed, static consumer showcase                                         |
 | `npm run test:browser`                                                           | 240 passed, 12 recorded skips, 0 failures; six projects, 252 total cases |
-| `npm run test:package`                                                           | 30 passed, 0 failures; real installed archive and plain-module hosting     |
-| `npm run test:browser -- --project chromium --grep "records warmed" --workers 1` | Passed; controlled timing run after other suites finished                  |
+| `npm run test:package`                                                           | 30 passed, 0 failures; real installed archive and plain-module hosting   |
+| `npm run test:browser -- --project chromium --grep "records warmed" --workers 1` | Passed; controlled timing run after other suites finished                |
 
 Five timing cases are skipped because timings are recorded once in desktop Chromium; three touch-only cases are skipped in desktop configurations; four real-audio cases skip in this WebKit build without Web Audio. The same touch interaction runs in all three touch configurations. Missing-WebGL tests intentionally emit Three.js context-creation errors before falling back successfully. The demo build emits a chunk-size advisory for bundled Three.js; it is not a build failure. The core library is about 658 kB uncompressed / 150 kB gzip; PDF support is a separate lazy chunk of about 620 kB / 164 kB gzip, excluding worker/support data.
 

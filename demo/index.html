@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="folio3d-version" content="0.3.0" />
     <meta
       name="description"
       content="An open-source 3D flipbook for your PDFs and images. Browser-only, embeddable and yours to build on."
@@ -42,8 +43,13 @@
                 <option value="classic">Classic</option>
                 <option value="sepia">Sepia</option>
                 <option value="midnight">Midnight</option>
+                <option value="ocean">Ocean</option>
+                <option value="forest">Forest</option>
+                <option value="slate">Slate</option>
+                <option value="high-contrast">High Contrast</option>
               </select>
             </label>
+            <button id="custom-theme" aria-pressed="false">Custom palette</button>
             <label class="upload" for="file">Open your PDF <span aria-hidden="true">↗</span></label
             ><input
               id="file"
@@ -145,6 +151,7 @@
 
 const book = createFlipbook(element, {
   source: { type: 'pdf', data: './catalog.pdf' },
+  theme: 'modern',
 });
 
 await book.ready;
@@ -158,6 +165,18 @@ book.destroy();</code></pre>
               >CDN &amp; publishing guide ↗</a
             >
           </p>
+          <details class="css-example">
+            <summary>Customize with CSS variables</summary>
+            <pre><code id="css-snippet">#catalog .folio3d {
+  --folio-accent: #005a7a;
+  --folio-font: Georgia, serif;
+}</code></pre>
+            <button id="copy-css">Copy CSS</button>
+            <p>
+              Place your inline reader inside #catalog. Use themeOverrides to carry custom colors
+              into a lightbox too.
+            </p>
+          </details>
         </div>
       </section>
       <section class="principles" aria-label="Made for the open web">

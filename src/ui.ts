@@ -1,12 +1,17 @@
 import type { FlipbookState, Source } from './types';
+import { applyTheme } from './themes';
 export type Action =
   'previous' | 'next' | 'zoomIn' | 'zoomOut' | 'fit' | 'fullscreen' | 'sound' | 'bookmark';
+let controlsId = 0;
 export class ReaderUI {
   readonly root = document.createElement('section');
   readonly stage = document.createElement('div');
   readonly message = document.createElement('div');
   readonly input = document.createElement('input');
   readonly browse = document.createElement('button');
+  private more = document.createElement('button');
+  private secondary = document.createElement('div');
+  private compact = false;
   private count = document.createElement('span');
   private live = document.createElement('span');
   private buttons = new Map<Action, HTMLButtonElement>();
@@ -32,6 +37,7 @@ export class ReaderUI {
     toolbar.className = 'folio3d-toolbar';
     toolbar.setAttribute('role', 'group');
     toolbar.setAttribute('aria-label', 'Book controls');
+    let controls: HTMLElement = toolbar;
     this.browse.type = 'button';
     this.browse.textContent = 'Browse';
     this.browse.setAttribute('aria-label', 'Browse book');
@@ -41,8 +47,15 @@ export class ReaderUI {
       el.type = 'button';
       el.textContent = text;
       el.setAttribute('aria-label', aria);
-      el.addEventListener('click', () => onAction(action), { signal });
-      toolbar.append(el);
+      el.addEventListener(
+        'click',
+        () => {
+          el.focus();
+          onAction(action);
+        },
+        { signal },
+      );
+      controls.append(el);
       this.buttons.set(action, el);
     };
     button('previous', '←', 'Previous page');
@@ -71,10 +84,111 @@ export class ReaderUI {
     labelElement.append(name, this.input, this.count);
     toolbar.append(labelElement);
     button('next', '→', 'Next page');
+    this.secondary.className = 'folio3d-secondary';
+    this.secondary.id = `folio3d-controls-${++controlsId}`;
+    this.secondary.setAttribute('role', 'group');
+    this.secondary.setAttribute('aria-label', 'More book controls');
+    controls = this.secondary;
+    this.more.type = 'button';
+    this.more.className = 'folio3d-more';
+    this.more.textContent = 'More';
+    this.more.setAttribute('aria-label', 'More controls');
+    this.more.setAttribute('aria-expanded', 'false');
+    this.more.setAttribute('aria-controls', this.secondary.id);
+    this.more.addEventListener(
+      'pointerdown',
+      (event) => {
+        event.preventDefault();
+        this.more.focus();
+      },
+      { signal },
+    );
+    this.more.addEventListener(
+      'click',
+      () => {
+        if (this.more.getAttribute('aria-expanded') === 'true') this.closeMore(true);
+        else {
+          this.secondary.hidden = false;
+          this.more.setAttribute('aria-expanded', 'true');
+          this.secondary.querySelector<HTMLElement>('button:not(:disabled),a')?.focus();
+        }
+      },
+      { signal },
+    );
+    this.secondary.addEventListener(
+      'keydown',
+      (event) => {
+        if (!this.compact) return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          this.closeMore(true);
+        }
+        event.stopPropagation();
+      },
+      { signal },
+    );
+    this.secondary.addEventListener(
+      'pointerdown',
+      (event) => {
+        const control =
+          event.target instanceof Element ? event.target.closest<HTMLElement>('button,a') : null;
+        if (control) {
+          // Safari otherwise focuses the surrounding region and dismisses this
+          // disclosure before the control receives its click.
+          event.preventDefault();
+          control.focus();
+        }
+      },
+      { signal },
+    );
+    this.root.addEventListener(
+      'keydown',
+      (event) => {
+        if (
+          event.key === 'Escape' &&
+          this.compact &&
+          this.more.getAttribute('aria-expanded') === 'true'
+        ) {
+          event.preventDefault();
+          event.stopPropagation();
+          this.closeMore(true);
+        }
+      },
+      { signal },
+    );
+    this.browse.addEventListener('click', () => this.closeMore(false), { signal });
+    document.addEventListener(
+      'pointerdown',
+      (event) => {
+        if (
+          this.compact &&
+          event.target instanceof Node &&
+          !this.secondary.contains(event.target) &&
+          !this.more.contains(event.target)
+        )
+          this.closeMore(false);
+      },
+      { signal },
+    );
+    document.addEventListener(
+      'focusin',
+      (event) => {
+        if (
+          this.compact &&
+          event.target instanceof Node &&
+          event.target !== document.body &&
+          event.target !== document.documentElement &&
+          !this.secondary.contains(event.target) &&
+          !this.more.contains(event.target)
+        )
+          this.closeMore(false);
+      },
+      { signal },
+    );
     const divider = document.createElement('span');
     divider.className = 'folio3d-divider';
     divider.setAttribute('aria-hidden', 'true');
-    toolbar.append(divider);
+    this.secondary.append(divider);
     button('zoomOut', '−', 'Zoom out');
     button('zoomIn', '+', 'Zoom in');
     button('fit', 'Fit', 'Reset zoom');
@@ -97,16 +211,33 @@ export class ReaderUI {
         this.objectUrl = URL.createObjectURL(blob);
         original.href = this.objectUrl;
       }
-      toolbar.append(original);
+      this.secondary.append(original);
     }
+    toolbar.append(this.more, this.secondary);
     this.live.className = 'folio3d-sr';
     this.live.setAttribute('aria-live', 'polite');
     this.live.setAttribute('aria-atomic', 'true');
     this.root.append(this.stage, this.message, toolbar, this.live);
     container.append(this.root);
+    this.setCompact(this.root.clientWidth < 720);
+  }
+  setCompact(compact: boolean): void {
+    if (compact === this.compact && this.root.dataset.compact !== undefined) return;
+    const active = document.activeElement;
+    this.compact = compact;
+    this.root.dataset.compact = String(compact);
+    if (compact && active && this.secondary.contains(active)) this.more.focus();
+    this.closeMore(false);
+    if (!compact && active === this.more)
+      this.secondary.querySelector<HTMLElement>('button:not(:disabled),a')?.focus();
+  }
+  private closeMore(focus: boolean): void {
+    this.secondary.hidden = this.compact;
+    this.more.setAttribute('aria-expanded', 'false');
+    if (focus) this.more.focus();
   }
   update(state: FlipbookState): void {
-    this.root.dataset.theme = state.theme;
+    applyTheme(this.root, state.theme, state.themeOverrides);
     this.root.dataset.status = state.status;
     this.root.dataset.renderer = state.renderer;
     this.stage.dataset.zoomed = String(state.zoom > 1);
@@ -117,6 +248,7 @@ export class ReaderUI {
       state.status === 'loading' || state.status === 'error' || state.status === 'destroyed';
     this.input.disabled = inactive;
     this.browse.disabled = inactive;
+    this.more.disabled = inactive;
     for (const button of this.buttons.values()) button.disabled = inactive;
     this.buttons.get('previous')!.disabled = inactive || state.page <= 1;
     this.buttons.get('next')!.disabled = inactive || state.visiblePages.includes(state.pageCount);

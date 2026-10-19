@@ -1,16 +1,21 @@
 import type { DocumentProvider, PageSurface, PageSize } from './types';
 const abortError = () => new DOMException('Rendering cancelled.', 'AbortError');
+interface Job {
+  abort: AbortController;
+  visible: boolean;
+  promise: Promise<PageSurface>;
+}
 export class RenderScheduler {
   private cache = new Map<string, PageSurface>();
-  private pending = new Map<string, Promise<PageSurface>>();
+  private pending = new Map<string, Job>();
   private pins = new Set<string>();
   private displayed = new Set<PageSurface>();
-  private abort = new AbortController();
+  private generation = 0;
   private active = 0;
   private bytes = 0;
   private reserved = 0;
   private rendered = 0;
-  private waiting: Array<() => void> = [];
+  private waiting: Array<{ job: Job; wake: () => void }> = [];
   private disposed = false;
   constructor(
     private provider: DocumentProvider,
@@ -24,27 +29,39 @@ export class RenderScheduler {
   }
   async prepare(pages: number[], size: PageSize): Promise<Map<number, PageSurface>> {
     if (this.disposed) throw abortError();
-    this.abort.abort();
-    this.abort = new AbortController();
-    const signal = this.abort.signal;
-    this.pending.clear();
+    const generation = ++this.generation;
     this.pins = new Set(pages.map((page) => this.key(page, size)));
+    for (const [key, job] of this.pending) {
+      if (this.pins.has(key)) job.visible = true;
+      else {
+        job.abort.abort();
+        this.pending.delete(key);
+      }
+    }
+    this.wake();
     const entries = await Promise.all(
       [...new Set(pages)].map(
-        async (page) => [page, await this.load(page, size, signal, pages.length)] as const,
+        async (page) => [page, await this.load(page, size, true, pages.length)] as const,
       ),
     );
-    if (signal.aborted) throw abortError();
+    if (this.disposed || generation !== this.generation) throw abortError();
     return new Map(entries);
   }
   prefetch(pages: number[], size: PageSize): void {
     for (const page of pages)
       if (page > 0 && page <= this.provider.pageCount)
-        void this.load(page, size, this.abort.signal, Math.max(4, this.pins.size)).catch(() => {});
+        void this.load(page, size, false, Math.max(4, this.pins.size)).catch(() => {});
   }
-  private async slot(signal: AbortSignal): Promise<void> {
+  private wake(): void {
+    this.waiting
+      .splice(0)
+      .sort((a, b) => Number(b.job.visible) - Number(a.job.visible))
+      .forEach(({ wake }) => wake());
+  }
+  private async slot(job: Job): Promise<void> {
+    const signal = job.abort.signal;
     while (this.active >= 2) {
-      await new Promise<void>((resolve) => this.waiting.push(resolve));
+      await new Promise<void>((resolve) => this.waiting.push({ job, wake: resolve }));
       if (signal.aborted) throw abortError();
     }
     if (signal.aborted) throw abortError();
@@ -60,9 +77,10 @@ export class RenderScheduler {
   private load(
     page: number,
     size: PageSize,
-    signal: AbortSignal,
+    visible: boolean,
     count: number,
   ): Promise<PageSurface> {
+    if (this.disposed) return Promise.reject(abortError());
     const key = this.key(page, size),
       cached = this.cache.get(key);
     if (cached) {
@@ -71,9 +89,14 @@ export class RenderScheduler {
       return Promise.resolve(cached);
     }
     const pending = this.pending.get(key);
-    if (pending) return pending;
+    if (pending) {
+      if (visible) pending.visible = true;
+      return pending.promise;
+    }
+    const job: Job = { abort: new AbortController(), visible, promise: undefined! };
+    const signal = job.abort.signal;
     const operation = (async () => {
-      await this.slot(signal);
+      await this.slot(job);
       let reservation = 0;
       try {
         if (signal.aborted) throw abortError();
@@ -110,17 +133,23 @@ export class RenderScheduler {
         this.cache.set(key, surface);
         this.bytes += surface.bytes;
         this.rendered++;
+        for (const [old, value] of this.cache) {
+          if (this.cache.size <= 6) break;
+          if (!this.pins.has(old) && !this.displayed.has(value)) this.evict(old);
+        }
+        if (!this.cache.has(key)) throw abortError();
         return surface;
       } finally {
         this.reserved -= reservation;
         this.active--;
-        this.waiting.splice(0).forEach((resolve) => resolve());
+        this.wake();
       }
     })();
-    this.pending.set(key, operation);
+    job.promise = operation;
+    this.pending.set(key, job);
     void operation
       .finally(() => {
-        if (this.pending.get(key) === operation) this.pending.delete(key);
+        if (this.pending.get(key) === job) this.pending.delete(key);
       })
       .catch(() => {});
     return operation;
@@ -137,10 +166,12 @@ export class RenderScheduler {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
-    this.abort.abort();
+    this.generation++;
+    for (const job of this.pending.values()) job.abort.abort();
+    this.pending.clear();
     this.pins.clear();
     this.displayed.clear();
     for (const [key] of this.cache) this.evict(key);
-    this.waiting.splice(0).forEach((resolve) => resolve());
+    this.wake();
   }
 }

@@ -11,6 +11,8 @@ for (const path of ['/nested/', '/nested/minified.html', '/npm/'])
     await page.getByRole('button', { name: 'Browse book' }).click();
     await expect(page.locator('.folio3d-thumbnails canvas')).toHaveCount(6);
     await page.getByRole('button', { name: 'Close navigation' }).click();
+    const more = page.getByRole('button', { name: 'More controls', exact: true });
+    if (await more.isVisible()) await more.click();
     await page.getByRole('button', { name: 'Bookmark this page', exact: true }).click();
     await expect(
       page.getByRole('button', { name: 'Remove bookmark for this page' }),
@@ -82,7 +84,16 @@ test('mobile showcase fits the viewport', async ({ page }, info) => {
 test('theme selector updates the production reader and lightbox', async ({ page }, info) => {
   await page.goto('/showcase/');
   await expect(page.locator('.folio3d')).toHaveAttribute('data-status', 'ready');
-  for (const theme of ['classic', 'modern', 'sepia', 'midnight']) {
+  for (const theme of [
+    'classic',
+    'modern',
+    'sepia',
+    'midnight',
+    'ocean',
+    'forest',
+    'slate',
+    'high-contrast',
+  ]) {
     await page.getByRole('combobox', { name: 'Theme', exact: true }).selectOption(theme);
     await expect(page.locator('.folio3d')).toHaveAttribute('data-theme', theme);
     if (theme === 'midnight') {
@@ -100,9 +111,16 @@ test('theme selector updates the production reader and lightbox', async ({ page 
     await page.getByRole('button', { name: 'Close navigation' }).click();
   }
   await page.getByRole('button', { name: 'Open lightbox' }).click();
-  await expect(page.getByRole('dialog')).toHaveAttribute('data-theme', 'midnight');
+  await expect(page.getByRole('dialog')).toHaveAttribute('data-theme', 'high-contrast');
   await expect(page.getByRole('dialog').locator('.folio3d')).toHaveAttribute(
     'data-theme',
-    'midnight',
+    'high-contrast',
   );
+  await page.keyboard.press('Escape');
+  const selectedPage = await page.locator('#book input').inputValue();
+  await page.getByRole('button', { name: 'Custom palette', exact: true }).click();
+  await expect(page.locator('#snippet')).toContainText('themeOverrides');
+  await page.getByRole('button', { name: 'Open lightbox' }).click();
+  await expect(page.getByRole('dialog')).toHaveCSS('background-color', 'rgb(241, 250, 251)');
+  await expect(page.getByRole('dialog').locator('input')).toHaveValue(selectedPage);
 });

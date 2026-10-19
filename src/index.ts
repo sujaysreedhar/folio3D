@@ -7,6 +7,7 @@ export type {
   PageMode,
   RendererMode,
   Theme,
+  ThemeTokens,
   ContentsEntry,
 } from './types';
 import type { Flipbook, FlipbookOptions } from './types';

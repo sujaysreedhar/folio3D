@@ -1,7 +1,18 @@
 export type PageMode = 'auto' | 'single' | 'double';
 export type ResolvedPageMode = Exclude<PageMode, 'auto'>;
 export type RendererMode = 'auto' | 'webgl' | 'flat';
-export type Theme = 'classic' | 'modern' | 'sepia' | 'midnight';
+export type Theme =
+  'classic' | 'modern' | 'sepia' | 'midnight' | 'ocean' | 'forest' | 'slate' | 'high-contrast';
+export interface ThemeTokens {
+  ink: string;
+  paper: string;
+  stage: string;
+  muted: string;
+  border: string;
+  hover: string;
+  accent: string;
+  font: string;
+}
 export interface ContentsEntry {
   title: string;
   page?: number;
@@ -21,6 +32,7 @@ export interface FlipbookOptions {
   sound?: boolean;
   label?: string;
   theme?: Theme;
+  themeOverrides?: Partial<ThemeTokens>;
   contents?: ContentsEntry[];
   /** Opt in to local bookmark persistence with a unique document/version key. */
   storageKey?: string;
@@ -32,6 +44,7 @@ export interface FlipbookState {
   zoom: number;
   sound: boolean;
   theme: Theme;
+  themeOverrides: Partial<ThemeTokens>;
   pageMode: ResolvedPageMode;
   renderer: Exclude<RendererMode, 'auto'>;
   status: 'loading' | 'ready' | 'turning' | 'error' | 'destroyed';
@@ -54,6 +67,7 @@ export interface Flipbook {
   resetZoom(): void;
   setSound(enabled: boolean): void;
   setTheme(theme: Theme): void;
+  setThemeOverrides(overrides: Partial<ThemeTokens>): void;
   getContents(): Promise<ContentsEntry[]>;
   getBookmarks(): number[];
   toggleBookmark(page?: number): void;

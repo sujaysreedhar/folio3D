@@ -4,11 +4,11 @@ Folio3D has two deliverables: the embeddable library and a static demonstration 
 
 ## Use the published library
 
-Version 0.2.1 URLs:
+Version 0.3.0 URLs:
 
-- JavaScript: `https://cdn.jsdelivr.net/gh/sujaysreedhar/folio3D@v0.2.1/dist/folio3d.min.js`
-- CSS: `https://cdn.jsdelivr.net/gh/sujaysreedhar/folio3D@v0.2.1/dist/folio3d.min.css`
-- [Downloads, source and checksums](https://github.com/sujaysreedhar/folio3D/releases/tag/v0.2.1)
+- JavaScript: `https://cdn.jsdelivr.net/gh/sujaysreedhar/folio3D@v0.3.0/dist/folio3d.min.js`
+- CSS: `https://cdn.jsdelivr.net/gh/sujaysreedhar/folio3D@v0.3.0/dist/folio3d.min.css`
+- [Downloads, source and checksums](https://github.com/sujaysreedhar/folio3D/releases/tag/v0.3.0)
 
 The minified ES module uses matching minified chunks under `dist/chunks/min/`. Keep those files and `dist/assets/` when copying the distribution. The original entry/style filenames remain supported; the stylesheet was already minified, so `.min.css` contains the same CSS. All GitHub packages include both variants.
 
@@ -18,7 +18,7 @@ Use the browser ZIP for a plain website (`example.html` is included), or install
 
 ## Deploy the website
 
-Download `folio3d-0.2.1-website.zip`, extract it and upload its **contents** to the static host serving your domain. Or upload the contents of `demo-dist/` after:
+Download `folio3d-0.3.0-website.zip`, extract it and upload its **contents** to the static host serving your domain. Or upload the contents of `demo-dist/` after:
 
 ```sh
 npm ci
@@ -26,7 +26,11 @@ npm run build
 npm run build:demo
 ```
 
-Preserve `demos/`, `samples/`, `assets/`, `lib/`, and license notices. Relative build paths support a domain root or subdirectory. The existing custom domain needs its host's upload/deployment mechanism; creating a GitHub release does not update that host automatically. Preview with `npm run preview`.
+Preserve `demos/`, `samples/`, `assets/`, `lib/`, and license notices. Relative build paths support a domain root or subdirectory. Preview with `npm run preview`.
+
+The live demo uses GitHub Pages, publishing the root of the `docs` branch at `folio3d.sujaysreedhar.com`. After verification, commit the contents of `demo-dist/` to that branch and push it. Preserve `.nojekyll` and `CNAME`; matching files are included in `demo/public/` so production builds retain them. The `docs` deployment branch is separate from the `docs/` source-documentation directory on `main`. Publishing a GitHub release alone does not update Pages.
+
+Confirm Settings → Pages selects `docs` and `/ (root)`. Wait for the Pages deployment, then verify the live version meta tag, all eight presets, the custom palette/lightbox, a PDF and each example route. Keep the previous deployment commit so a failed hosted check can be rolled back with a revert commit.
 
 ## Cut the next release
 
@@ -35,7 +39,7 @@ Preserve `demos/`, `samples/`, `assets/`, `lib/`, and license notices. Relative 
 3. Commit and push the verified source to `main`.
 4. Run the local release commands below. They build archives, tag the distribution, upload assets into a draft, then publish the complete release.
 
-For optional GitHub Actions publishing, first copy [the workflow template](github-release-workflow.yml) to `.github/workflows/release.yml` and commit it using a GitHub login with workflow-write permission. Then choose **Actions → Publish GitHub and CDN release → Run workflow**, selecting `main`. The template reruns verification and uses its repository-scoped GitHub token with `contents: write`. The template is not installed automatically because the publishing login used for v0.2.1 lacks the `workflow` scope.
+For optional GitHub Actions publishing, first copy [the workflow template](github-release-workflow.yml) to `.github/workflows/release.yml` and commit it using a GitHub login with workflow-write permission. Then choose **Actions → Publish GitHub and CDN release → Run workflow**, selecting `main`. The template reruns verification and uses its repository-scoped GitHub token with `contents: write`. The template is not installed automatically because the publishing login used for v0.3.0 lacks the `workflow` scope.
 
 For a local release from the same verified source commit:
 

@@ -1,12 +1,15 @@
 import type { Flipbook, FlipbookOptions } from './types';
+import { applyTheme, normalizeThemeOverrides, validateTheme } from './themes';
 export function createLightbox(
   options: FlipbookOptions,
   create: (element: HTMLElement, options: FlipbookOptions) => Flipbook,
 ): Flipbook {
+  validateTheme(options.theme ?? 'classic');
+  const overrides = normalizeThemeOverrides(options.themeOverrides ?? {});
   const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const dialog = document.createElement('dialog');
   dialog.className = 'folio3d-dialog';
-  dialog.dataset.theme = options.theme ?? 'classic';
+  applyTheme(dialog, options.theme ?? 'classic', overrides);
   dialog.setAttribute('aria-label', options.label ?? 'Flipbook reader');
   const close = document.createElement('button');
   close.className = 'folio3d-close';

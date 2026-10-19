@@ -526,3 +526,19 @@ button:active,
     scroll-behavior: auto;
   }
 }
+.css-example {
+  margin-top: 20px;
+}
+.css-example summary {
+  cursor: pointer;
+  padding: 8px 0;
+}
+.css-example > button {
+  margin: 0 20px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.actions #custom-theme[aria-pressed='true'] {
+  background: #173b4a;
+  color: #f1fafb;
+}

@@ -1,6 +1,47 @@
 import { test, expect } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { cpus, platform, release, totalmem } from 'node:os';
+
+test('fitted and immediate turns skip redundant transform and animation draws', async ({
+  page,
+}) => {
+  await page.goto('/reader-probe.html');
+  const result = await page.evaluate(async () => {
+    const r = (window as any).reader;
+    const b = r.createFlipbook(document.querySelector('#one'), {
+      source: r.images,
+      renderer: 'webgl',
+      initialPage: 2,
+      duration: 0,
+    });
+    await b.ready;
+    let transforms = 0,
+      turns = 0;
+    const transform = b.renderer.setTransform.bind(b.renderer),
+      turn = b.renderer.turn.bind(b.renderer);
+    b.renderer.setTransform = (...args: any[]) => {
+      transforms++;
+      transform(...args);
+    };
+    b.renderer.turn = (...args: any[]) => {
+      turns++;
+      turn(...args);
+    };
+    b.resetZoom();
+    b.next();
+    await new Promise((resolve) => {
+      const off = b.on('pagechange', () => {
+        off();
+        resolve(undefined);
+      });
+    });
+    const result = { transforms, turns, page: b.getState().page };
+    b.destroy();
+    return result;
+  });
+  expect(result).toEqual({ transforms: 0, turns: 0, page: 4 });
+});
+
 test('records warmed page-turn timings on this hardware', async ({ page, browser }, info) => {
   test.skip(info.project.name !== 'chromium', 'One controlled desktop measurement');
   await page.goto('/reader-probe.html');

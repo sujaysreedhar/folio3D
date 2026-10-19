@@ -1,0 +1,15 @@
+# Execution ledger — docs/RELEASE-0.3.0-PLAN.md
+
+- Baseline: clean main at fda2532; 16 unit tests and typecheck passed during planning.
+- Ruling: use an isolated feature branch in the current checkout — dependencies and browser assets already exist here; avoids duplicating the workspace. Main is preserved until verified integration.
+- Pre-flight: theme types feed controller, UI, lightbox and demo; scheduler changes preserve prepare/prefetch/retainView; lazy renderer installation must remain independent of synchronous flat fallback.
+- Tasks 1–5: pending.
+- Task 2 implementation complete: lazy renderer, shared priority jobs, cache bounds, full directional prefetch, resize coalescing and redundant-draw removal. Matched benchmark: entry gzip 142377→11746 bytes; WebGL preparation 50.5→14.4ms desktop and 84.9→52.7ms mobile; frame p95 33.5→33.4ms. Flat preparation changes only 3–4%; documented explicitly.
+- Pages configuration read through GitHub API: legacy branch deployment, docs at /, CNAME folio3d.sujaysreedhar.com, previous status built.
+- Independent read-only review found four reproducible issues: Escape on More trigger, host inline CSS ownership, responsive focus transfer, and modal header fonts. All received failing browser regressions before fixes. Ruling: focus retention and font parity are required acceptance behavior, so both initially minor findings are included in the fix pass; no deferred findings.
+- The first full matrix exposed legacy tests accessing controls now inside More, plus a WebKit click/focusout race in the new panel. Tests now open More explicitly; actual WebKit behavior is corrected by explicit button focus and focusin-based dismissal.
+- Final verification: 21 unit tests, typecheck, library/demo builds, 390 browser checks (12 intentional skips), 48 production-demo checks, 54 packed-package checks, and desktop/mobile production smoke passed. All four independent-review findings fixed and covered; no deferred review findings.
+- Tasks 1–4 complete. Task 5 publication pending; previous Pages commit 42f4a14b729ee3d51579f7d2328822579cca66bb is retained in artifacts/pages-v0.3.0 for rollback if hosted checks fail.
+- Final measured entry gzip is 11,993 bytes (91.6% below baseline). Real AMD GPU paired run: WebGL preparation 40.3→11.3ms desktop, 74.6→40.6ms mobile; p95 remains 16.8ms. SwiftShader p95 rises 33.5→50ms and is a documented limitation. Ruling: ship the hardware-verified release with transparent software-renderer results — the release improves real-GPU behavior and retains explicit flat rendering for software-constrained environments; software WebGL smoothness remains a limitation.
+- Tasks 1 and 3 implementation: eight presets, typed overrides, copied state, lightbox parity, custom-palette demo and responsive More controls. Chromium targeted checks 9/9 passed; theme/scheduler unit checks 21/21 passed after reproducing duplicate prefetch and concurrent cache overflow.
+- Ruling: benchmark adjacent navigation with next(), rather than a fixed page 4 — mobile single-page mode makes 2→4 a non-adjacent jump. Rerun both baseline and current with the corrected identical workload.

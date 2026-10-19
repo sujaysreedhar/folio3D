@@ -49,6 +49,23 @@ for (const name of (await readdir(directory)).filter(
   await cp(resolve(directory, name), resolve(release, 'artifacts', name), { recursive: true });
 
 const browser = resolve(directory, 'browser');
+for (const label of ['baseline', 'release', 'baseline-hardware', 'release-hardware']) {
+  const destination = resolve(release, 'artifacts/benchmarks', label);
+  await mkdir(destination, { recursive: true });
+  try {
+    await cp(
+      resolve(directory, 'benchmarks', label, 'report.json'),
+      resolve(destination, 'report.json'),
+    );
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  try {
+    await cp(resolve(directory, 'benchmarks', label, 'frames-report.json'), resolve(destination, 'frames-report.json'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+}
 if (!browser.startsWith(directory + sep)) throw new Error('Invalid browser directory.');
 await rm(browser, { recursive: true, force: true });
 await mkdir(browser, { recursive: true });

@@ -61,6 +61,7 @@ export class WebGLBookRenderer implements BookRenderer {
   private panX = 0;
   private panY = 0;
   private shift = 0;
+  private uvDirection?: 1 | -1;
   private readonly cameraLift = 6 * Math.tan(0.14);
 
   constructor(onContextLost: () => void) {
@@ -129,9 +130,12 @@ export class WebGLBookRenderer implements BookRenderer {
     mesh.visible = page !== null && page !== undefined;
     mesh.position.x = x;
     mesh.scale.y = this.ratio;
-    mesh.material.map = surface ? this.texture(surface) : null;
+    const map = surface ? this.texture(surface) : null;
+    if (mesh.material.map !== map) {
+      mesh.material.map = map;
+      mesh.material.needsUpdate = true;
+    }
     mesh.material.color.set(surface ? 0xffffff : 0xf5f1e8);
-    mesh.material.needsUpdate = true;
   }
   private retain(views: View[]): void {
     const keep = new Set(views.flatMap((v) => Array.from(v.surfaces.values(), (s) => s.canvas)));
@@ -199,27 +203,38 @@ export class WebGLBookRenderer implements BookRenderer {
     );
     const frontSurface = source ? from.surfaces.get(source) : undefined,
       backSurface = target ? to.surfaces.get(target) : undefined;
-    this.front.material.map = frontSurface ? this.texture(frontSurface) : null;
-    this.back.material.map = backSurface ? this.texture(backSurface) : null;
+    const frontMap = frontSurface ? this.texture(frontSurface) : null;
+    const backMap = backSurface ? this.texture(backSurface) : null;
+    if (
+      this.front.material.map !== frontMap ||
+      this.back.material.map !== backMap ||
+      this.uvDirection !== direction
+    ) {
+      this.front.material.map = frontMap;
+      this.back.material.map = backMap;
+      this.front.material.side = direction === 1 ? FrontSide : BackSide;
+      this.back.material.side = direction === 1 ? BackSide : FrontSide;
+      this.front.material.needsUpdate = this.back.material.needsUpdate = true;
+    }
     // For mirrored backward geometry, face orientation swaps.
-    this.front.material.side = direction === 1 ? FrontSide : BackSide;
-    this.back.material.side = direction === 1 ? BackSide : FrontSide;
-    this.front.material.needsUpdate = this.back.material.needsUpdate = true;
     for (const [mesh, isBack] of [
       [this.front, false],
       [this.back, true],
     ] as const) {
       deformSheet(mesh.geometry, progress, this.ratio, direction);
-      const uv = mesh.geometry.getAttribute('uv');
-      for (let i = 0; i < uv.count; i++)
-        uv.setX(
-          i,
-          (isBack ? direction === 1 : direction === -1) ? 1 - (i % 41) / 40 : (i % 41) / 40,
-        );
-      uv.needsUpdate = true;
+      if (this.uvDirection !== direction) {
+        const uv = mesh.geometry.getAttribute('uv');
+        for (let i = 0; i < uv.count; i++)
+          uv.setX(
+            i,
+            (isBack ? direction === 1 : direction === -1) ? 1 - (i % 41) / 40 : (i % 41) / 40,
+          );
+        uv.needsUpdate = true;
+      }
       mesh.visible = true;
       mesh.position.x = this.single ? -direction * 0.5 : 0;
     }
+    this.uvDirection = direction;
     this.shift = this.single ? -direction * progress : 0;
     this.stacks.forEach((stack, i) => {
       stack.visible = !this.single;

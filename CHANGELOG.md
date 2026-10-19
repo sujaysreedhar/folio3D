@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0 — 2026-10-19
+
+Added Ocean, Forest, Slate and High Contrast presets, typed `ThemeTokens`, `themeOverrides`, and `setThemeOverrides()`. Overrides apply to readers and lightbox headers, survive preset switches and appear as copied state in theme events. The demo includes all eight presets, a custom palette and copyable JavaScript/CSS examples.
+
+Three.js now loads only for WebGL readers, alongside document initialization. Matching prefetch work survives navigation, adjacent spreads are prefetched in full, unchanged material/UV setup stays out of animation frames, and resize callbacks coalesce. Below 720 reader pixels, secondary controls move into an accessible More disclosure; controls use 44px touch targets. Existing source formats, navigation methods, flat fallback and memory limits remain supported.
+
 ## 0.2.1 — 2026-10-13
 
 Added `folio3d.min.js` with minified lazy PDF chunks and `folio3d.min.css` as an alias of the already-minified stylesheet. Included both variants in npm/browser/website packages, added typed `folio3d/min` and `folio3d/style.min.css` exports, and updated CDN examples to use the minified entry. Original entry points and version 0.2.0 remain unchanged. License comments and bundled notices are retained.

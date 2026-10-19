@@ -12,7 +12,7 @@ Turn PDFs and images into interactive 3D flipbooks for catalogs, magazines, port
 - Inline viewers and modal lightboxes, with keyboard and pointer navigation.
 - Optional page-turn sound with a mute control in the reader toolbar.
 - Page thumbnails, nested PDF/custom contents, and bookmarks with optional browser persistence.
-- Classic, Modern, Sepia and Midnight themes, switchable without reopening the book.
+- Eight themes: Classic, Modern, Sepia, Midnight, Ocean, Forest, Slate and High Contrast. Switch themes or apply custom colors/fonts without reopening the book.
 - Browser-only document processing. Local files stay on your device; no backend, account or upload is required.
 - Plain HTML and npm/bundler integration, with self-hosted PDF workers and support assets.
 
@@ -76,10 +76,13 @@ Relative build paths support hosting at the domain root or in a subdirectory. Se
 The versioned GitHub release is available through jsDelivr. Keep the JavaScript and CSS on the same version:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sujaysreedhar/folio3D@v0.2.1/dist/folio3d.min.css" />
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/sujaysreedhar/folio3D@v0.3.0/dist/folio3d.min.css"
+/>
 <div id="book" style="height:600px"></div>
 <script type="module">
-  import { createFlipbook } from 'https://cdn.jsdelivr.net/gh/sujaysreedhar/folio3D@v0.2.1/dist/folio3d.min.js';
+  import { createFlipbook } from 'https://cdn.jsdelivr.net/gh/sujaysreedhar/folio3D@v0.3.0/dist/folio3d.min.js';
   const book = createFlipbook(document.querySelector('#book'), {
     source: { type: 'pdf', data: './catalog.pdf' },
     theme: 'modern',
@@ -95,7 +98,7 @@ The `.min.js` entry and its lazy PDF chunks are fully minified. The `.min.css` f
 
 ### Download and self-host
 
-Get the [browser ZIP](https://github.com/sujaysreedhar/folio3D/releases/download/v0.2.1/folio3d-0.2.1-browser.zip), [website ZIP](https://github.com/sujaysreedhar/folio3D/releases/download/v0.2.1/folio3d-0.2.1-website.zip), or [all release assets and checksums](https://github.com/sujaysreedhar/folio3D/releases/tag/v0.2.1). The browser ZIP includes `example.html` and a sample PDF; serve it over HTTP(S).
+Get the [browser ZIP](https://github.com/sujaysreedhar/folio3D/releases/download/v0.3.0/folio3d-0.3.0-browser.zip), [website ZIP](https://github.com/sujaysreedhar/folio3D/releases/download/v0.3.0/folio3d-0.3.0-website.zip), or [all release assets and checksums](https://github.com/sujaysreedhar/folio3D/releases/tag/v0.3.0). The browser ZIP includes `example.html` and a sample PDF; serve it over HTTP(S).
 
 Copy the entire `dist` directory to `lib` on your static server. Preserve `chunks`, `assets` and license files alongside the entry point. No CDN or runtime package resolution is needed.
 
@@ -120,7 +123,7 @@ The viewer fills its container. Set a positive height; width is responsive. Defa
 Install the downloadable GitHub package directly. This release does not require npm registry publication:
 
 ```sh
-npm install https://github.com/sujaysreedhar/folio3D/releases/download/v0.2.1/folio3d-0.2.1.tgz
+npm install https://github.com/sujaysreedhar/folio3D/releases/download/v0.3.0/folio3d-0.3.0.tgz
 ```
 
 Or build and install a local archive:
@@ -128,7 +131,7 @@ Or build and install a local archive:
 ```sh
 npm run release
 # In your consuming project:
-npm install /path/to/folio3d/artifacts/folio3d-0.2.1.tgz
+npm install /path/to/folio3d/artifacts/folio3d-0.3.0.tgz
 ```
 
 ```ts
@@ -168,19 +171,20 @@ An explicit minified npm entry is also available as `import { createFlipbook } f
 
 Caller-owned byte arrays are copied before PDF.js receives them. URLs follow normal browser CORS rules. Local files are read on the device. The current canvas reader announces page numbers; image `alt` metadata is retained in the source contract for future text-based presentation, but is not a substitute for accessible document content. PDFs have an Original PDF link for the native reader.
 
-| Option           | Default                | Meaning                                                              |
-| ---------------- | ---------------------- | -------------------------------------------------------------------- |
-| `renderer`       | `auto`                 | `auto`, `webgl`, `flat`; unavailable/lost WebGL falls back to flat   |
-| `pageMode`       | `auto`                 | `auto`, `single`, `double`; auto switches below 720 container pixels |
-| `initialPage`    | `1`                    | One-based starting page                                              |
-| `assetBaseUrl`   | Distribution-relative  | Directory containing worker, cmaps, standard_fonts, wasm             |
-| `memoryBudgetMB` | `96`                   | Owned raster/texture allocation budget; minimum 1 MiB                |
-| `duration`       | `600`                  | Full page-turn duration in milliseconds; zero is immediate           |
-| `sound`          | `false`                | Enable synthesized page-turn audio after a user interaction          |
-| `label`          | `Interactive flipbook` | Accessible region/dialog name                                        |
-| `theme`          | `classic`             | `classic`, `modern`, `sepia`, or `midnight` |
-| `contents`       | PDF outline or empty  | Nested `{ title, page?, children? }` entries; overrides PDF contents |
-| `storageKey`     | unset                 | Unique document/version key for persistent local bookmarks; unset keeps them per instance |
+| Option           | Default                | Meaning                                                                                   |
+| ---------------- | ---------------------- | ----------------------------------------------------------------------------------------- |
+| `renderer`       | `auto`                 | `auto`, `webgl`, `flat`; unavailable/lost WebGL falls back to flat                        |
+| `pageMode`       | `auto`                 | `auto`, `single`, `double`; auto switches below 720 container pixels                      |
+| `initialPage`    | `1`                    | One-based starting page                                                                   |
+| `assetBaseUrl`   | Distribution-relative  | Directory containing worker, cmaps, standard_fonts, wasm                                  |
+| `memoryBudgetMB` | `96`                   | Owned raster/texture allocation budget; minimum 1 MiB                                     |
+| `duration`       | `600`                  | Full page-turn duration in milliseconds; zero is immediate                                |
+| `sound`          | `false`                | Enable synthesized page-turn audio after a user interaction                               |
+| `label`          | `Interactive flipbook` | Accessible region/dialog name                                                             |
+| `theme`          | `classic`              | `classic`, `modern`, `sepia`, `midnight`, `ocean`, `forest`, `slate`, `high-contrast`     |
+| `themeOverrides` | `{}`                   | Partial `ThemeTokens`: ink, paper, stage, muted, border, hover, accent, font              |
+| `contents`       | PDF outline or empty   | Nested `{ title, page?, children? }` entries; overrides PDF contents                      |
+| `storageKey`     | unset                  | Unique document/version key for persistent local bookmarks; unset keeps them per instance |
 
 Zoom is clamped to 1×–3×. Texture edges are capped at 2048 pixels and DPR at 2. Pages of different sizes/rotations fit the first page's book dimensions with white letterboxing. Double mode starts blank|1, then 2|3 and 4|5. Blank partners do not change the page count. Single mode moves one page at a time.
 
@@ -192,10 +196,11 @@ Sound uses Web Audio without downloaded audio files. Set `sound: true` to enable
 - `next()`, `previous()`, `goToPage(page)` navigate. Await `ready` before page-range-dependent operations. Calls during initialization wait; during a turn, the latest pending target wins. Boundaries do nothing; invalid pages throw `RangeError` after count is known. Direct nonadjacent jumps are immediate after loading.
 - `setZoom(scale)`, `resetZoom()` change the view. Turns reset zoom; zoom requested during a turn applies after settlement. Dragging pans while zoomed; dragging a page turns it at fit. Short drags reverse; edge taps also navigate.
 - `setSound(enabled)` enables or mutes the page-turn sound. The toolbar also provides a sound toggle; browser audio permissions require a user interaction before playback.
-- `setTheme(theme)` switches the reader and lightbox appearance. Theme colors do not recolor document pages; see [theme tokens](docs/THEMES.md).
+- `setTheme(theme)` switches the reader and lightbox appearance. Additional preset IDs are `ocean`, `forest`, `slate`, and `high-contrast`. Custom overrides persist when switching presets. Theme colors do not recolor document pages; see [theme tokens](docs/THEMES.md).
+- `setThemeOverrides(overrides)` replaces the custom token map; `{}` restores host CSS and the current preset. The same tokens apply to the lightbox header. Unknown tokens and invalid CSS values throw before changing the current theme.
 - `getContents()` resolves nested contents after `ready`. PDF named and explicit internal destinations are resolved to one-based pages; external or invalid destinations remain labels. Contents trees are limited to 33 levels. A failed contents lookup can be retried.
 - `getBookmarks()` returns a sorted copy. `toggleBookmark(page?)` adds/removes a page (defaults to current); await `ready` first. Active same-key readers synchronize, and other tabs receive browser storage events. Storage failure falls back to session state. Persistence is origin-local, never an upload or cross-device sync. Use a new key when changing a document's page ordering; local demo file uploads use session bookmarks.
-- `getState()` returns a snapshot: `page`, `pageCount`, `visiblePages`, `zoom`, `sound`, `theme`, resolved `pageMode`, `renderer`, and `status` (`loading`, `ready`, `turning`, `error`, `destroyed`).
+- `getState()` returns a snapshot: `page`, `pageCount`, `visiblePages`, `zoom`, `sound`, `theme`, copied `themeOverrides`, resolved `pageMode`, `renderer`, and `status` (`loading`, `ready`, `turning`, `error`, `destroyed`).
 - `on('pagechange' | 'zoomchange' | 'rendererchange' | 'soundchange' | 'themechange', callback)` delivers state snapshots. `on('bookmarkchange', callback)` delivers sorted page numbers; `on('error', callback)` delivers an `Error`. All return an unsubscribe function. Initial state is available via `ready`/`getState()`.
 - `destroy()` is idempotent. It aborts loading/render work, terminates owned PDF workers, disconnects observers/listeners, cancels animation/timers, closes audio, releases textures/canvases/URLs and removes the viewer. Destroy during loading rejects `ready` with `AbortError`.
 
@@ -208,6 +213,8 @@ book.on('error', (error) => console.error(error.message));
 `openFlipbook(options)` opens a native modal dialog and returns the same handle. Escape, Close, or `destroy()` closes it and restores previous focus.
 
 Keyboard shortcuts apply only inside the focused viewer: Left/Right, Home/End, +/−, and 0 to fit. Form inputs retain their normal keyboard behavior. Pointer capture and cancellation are supported. Auto rendering respects reduced motion; explicit `webgl` opts into motion.
+
+Below 720 reader pixels, the toolbar keeps navigation visible and puts zoom, fit, sound, bookmarks, fullscreen and Original PDF inside **More**. Escape closes More and restores focus. Controls use at least 44px touch targets. Three.js is loaded only for readers needing WebGL; flat and reduced-motion readers skip the renderer chunk.
 
 ## Hosting, memory and compatibility
 
