@@ -48,7 +48,7 @@
     "dev": "vite --config vite.demo.config.ts --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:browser": "playwright test",
+    "test:browser": "node scripts/check-browser-environment.mjs && playwright test",
     "test:demos": "playwright test --config playwright.demos.config.ts",
     "fixtures": "node scripts/fixtures.mjs && node scripts/outline-fixture.mjs",
     "demo:assets": "node scripts/demo-assets.mjs",
