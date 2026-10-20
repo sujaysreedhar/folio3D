@@ -13,12 +13,18 @@ function run(command, parameters) {
 if (process.platform === 'linux' && !process.env.DISPLAY) {
   process.exit(run('xvfb-run', ['-a', process.execPath, fileURLToPath(import.meta.url), ...args]));
 }
-if (!args.some((arg) => arg.startsWith('--config'))) {
+// Probe the complete default CI matrix. Let Playwright handle selective,
+// headed and listing runs without requiring unselected browser binaries.
+if (args.length === 0) {
   const status = run(process.execPath, [
     fileURLToPath(new URL('./check-browser-environment.mjs', import.meta.url)),
   ]);
   if (status !== 0) process.exit(status);
 }
 process.exit(
-  run(process.execPath, [fileURLToPath(import.meta.resolve('@playwright/test/cli')), 'test', ...args]),
+  run(process.execPath, [
+    fileURLToPath(import.meta.resolve('@playwright/test/cli')),
+    'test',
+    ...args,
+  ]),
 );

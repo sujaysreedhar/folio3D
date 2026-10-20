@@ -3,7 +3,10 @@ import { mkdir, writeFile } from 'node:fs/promises';
 
 const results = [];
 for (const [name, browserType] of Object.entries({ chromium, firefox, webkit })) {
-  const browser = await browserType.launch({ headless: true });
+  const browser = await browserType.launch({
+    headless: true,
+    ...(name === 'chromium' ? { channel: process.env.FOLIO_CHROMIUM_CHANNEL } : {}),
+  });
   try {
     const page = await browser.newPage();
     const graphics = await page.evaluate(() => {

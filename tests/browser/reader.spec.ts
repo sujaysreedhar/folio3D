@@ -278,6 +278,9 @@ test('resize during a turn preserves the selected logical page', async ({ page }
     .toBe('ready');
   expect(await page.evaluate(() => (window as any).book.getState().page)).toBe(1);
   await page.mouse.up();
+  await expect(page.locator('#one .folio3d')).toHaveAttribute('data-status', 'ready');
+  await expect(stage).toHaveAttribute('data-dragging', 'false');
+  expect(await page.evaluate(() => (window as any).book.getState().page)).toBe(1);
 });
 test('destroy during loading rejects ready and releases late work', async ({ page }) => {
   const result = await page.evaluate(async () => {
