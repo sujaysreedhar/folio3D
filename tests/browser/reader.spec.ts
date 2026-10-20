@@ -259,16 +259,25 @@ test('resizing while initial pages load applies the final responsive layout', as
   expect(await page.evaluate(() => (window as any).book.getState().visiblePages)).toEqual([1]);
 });
 test('resize during a turn preserves the selected logical page', async ({ page }) => {
+  await page
+    .locator('#one')
+    .evaluate((el) => ((el as HTMLElement).style.width = 'min(900px,95vw)'));
   await mount(page, { renderer: 'webgl', duration: 1000 });
-  await page.evaluate(() => (window as any).book.next());
+  // Hold a drag so the turn cannot finish before the resize reaches the browser.
+  const stage = page.locator('#one .folio3d-stage');
+  const box = (await stage.boundingBox())!;
+  await page.mouse.move(box.x + box.width * 0.8, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.4, box.y + box.height / 2, { steps: 4 });
   await expect
     .poll(() => page.evaluate(() => (window as any).book.getState().status))
     .toBe('turning');
-  await page.locator('#one').evaluate((el) => ((el as HTMLElement).style.width = '400px'));
+  await page.locator('#one').evaluate((el) => ((el as HTMLElement).style.width = '300px'));
   await expect
     .poll(() => page.evaluate(() => (window as any).book.getState().status))
     .toBe('ready');
   expect(await page.evaluate(() => (window as any).book.getState().page)).toBe(1);
+  await page.mouse.up();
 });
 test('destroy during loading rejects ready and releases late work', async ({ page }) => {
   const result = await page.evaluate(async () => {

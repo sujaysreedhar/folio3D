@@ -21,15 +21,24 @@ try {
       reducedMotion: 'no-preference',
     });
     const page = await context.newPage(),
-      failures = [];
+      failures = [],
+      hostingRequests = [];
     page.on('pageerror', (error) => failures.push(error.message));
     page.on('response', (response) => {
       if (response.status() >= 400 && !response.url().endsWith('/favicon.ico'))
         failures.push(`${response.status()} ${response.url()}`);
     });
     page.on('request', (request) => {
-      if (request.method() !== 'GET')
-        failures.push(`Unexpected ${request.method()} ${request.url()}`);
+      if (request.method() !== 'GET') {
+        const url = new URL(request.url());
+        if (
+          request.method() === 'POST' &&
+          url.origin === base.origin &&
+          url.pathname === '/cdn-cgi/rum'
+        ) {
+          hostingRequests.push({ method: request.method(), path: url.pathname });
+        } else failures.push(`Unexpected ${request.method()} ${request.url()}`);
+      }
     });
     await page.goto(base.href, { waitUntil: 'networkidle' });
     assert.equal(
@@ -108,6 +117,7 @@ try {
       thumbnails: true,
       routes: ['catalog', 'portfolio', 'bookshelf'],
       failures,
+      hostingRequests,
     });
     await context.close();
   }

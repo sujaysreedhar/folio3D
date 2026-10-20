@@ -31,6 +31,15 @@ async function drag(page: Page, start: number, end: number) {
   const stage = page.locator('.folio3d-stage');
   const box = (await stage.boundingBox())!;
   const y = box.y + box.height / 2;
+  await stage.evaluate((element) =>
+    element.addEventListener(
+      'pointerdown',
+      (event) => {
+        (element as HTMLElement).dataset.pointerId = String((event as PointerEvent).pointerId);
+      },
+      { once: true },
+    ),
+  );
   await page.mouse.move(box.x + box.width * start, y);
   await page.mouse.down();
   await page.mouse.move(box.x + box.width * end, y, { steps: 12 });
@@ -74,7 +83,9 @@ test('a short drag and pointer cancellation restore the page and grab state', as
   await page.mouse.up();
   await selected(page, 2);
   await drag(page, 0.6, 0.2);
-  await stage.dispatchEvent('pointercancel', { pointerId: 1 });
+  await stage.dispatchEvent('pointercancel', {
+    pointerId: Number(await stage.getAttribute('data-pointer-id')),
+  });
   await page.mouse.up();
   await selected(page, 2);
   await expect(stage).toHaveAttribute('data-dragging', 'false');
@@ -99,6 +110,44 @@ test('keyboard navigation waits for a held pointer instead of starting a competi
 });
 
 async function trackAudio(page: Page) {
+  // An exposed AudioContext API does not imply an available output device.
+  // Probe from a real click so autoplay restrictions cannot cause a false skip.
+  await page.evaluate(() => {
+    const button = document.createElement('button');
+    button.id = 'audio-capability';
+    button.textContent = 'Check audio output';
+    button.onclick = () => {
+      Object.assign(window, {
+        audioAvailable: (async () => {
+          let context: AudioContext | undefined;
+          try {
+            context = new AudioContext();
+            const resumed = context.resume().then(
+              () => true,
+              () => false,
+            );
+            const running = await Promise.race([
+              resumed,
+              new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 1500)),
+            ]);
+            return running && context.state === 'running';
+          } catch {
+            return false;
+          } finally {
+            await context?.close().catch(() => {});
+          }
+        })(),
+      });
+    };
+    document.body.append(button);
+  });
+  await page.locator('#audio-capability').click();
+  const available = await page.evaluate(async () => {
+    const available = await (window as any).audioAvailable;
+    document.querySelector('#audio-capability')!.remove();
+    return available;
+  });
+  if (!available) return false;
   return page.evaluate(() => {
     if (typeof window.AudioContext !== 'function') return false;
     const stats = { created: 0, played: 0, closed: 0 };
@@ -132,7 +181,7 @@ test('sound is opt-in, plays on a completed turn, mutes and closes on destroy', 
 }) => {
   test.skip(
     !(await trackAudio(page)),
-    'AudioContext is unavailable in this browser build; fallback is tested separately.',
+    'Audio playback is unavailable in this environment; fallback is tested separately.',
   );
   await mount(page, { pageMode: 'single' });
   expect(await page.evaluate(() => (window as any).audioStats.created)).toBe(0);
@@ -169,7 +218,7 @@ test('sound is opt-in, plays on a completed turn, mutes and closes on destroy', 
 test('enabled sound waits for interaction', async ({ page }) => {
   test.skip(
     !(await trackAudio(page)),
-    'AudioContext is unavailable in this browser build; fallback is tested separately.',
+    'Audio playback is unavailable in this environment; fallback is tested separately.',
   );
   await mount(page, { sound: true, renderer: 'flat', pageMode: 'single' });
   expect(await page.evaluate(() => (window as any).audioStats.created)).toBe(0);
