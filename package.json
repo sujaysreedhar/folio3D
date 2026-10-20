@@ -48,7 +48,7 @@
     "dev": "vite --config vite.demo.config.ts --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:browser": "node scripts/run-browser-tests.mjs",
+    "test:browser": "node scripts/run-browser-tests.mjs tests/browser/reader.spec.ts tests/browser/loading.spec.ts --project=webkit --project=webkit-mobile --grep \"50 mount/destroy|flat readers skip\" --repeat-each=10 --trace=retain-on-failure",
     "test:demos": "node scripts/run-browser-tests.mjs --config playwright.demos.config.ts",
     "fixtures": "node scripts/fixtures.mjs && node scripts/outline-fixture.mjs",
     "demo:assets": "node scripts/demo-assets.mjs",

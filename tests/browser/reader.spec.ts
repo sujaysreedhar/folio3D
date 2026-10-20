@@ -304,6 +304,8 @@ test('50 mount/destroy cycles leave no viewers, loads, observers or animations r
   page,
 }) => {
   await page.evaluate(() => {
+    const fetchFailures: unknown[] = [];
+    Object.assign(window, { fetchFailures });
     const observers = new Set<ResizeObserver>(),
       frames = new Set<number>(),
       urls = new Set<string>();
@@ -330,6 +332,14 @@ test('50 mount/destroy cycles leave no viewers, loads, observers or animations r
       fetches++;
       try {
         return await nativeFetch(...args);
+      } catch (error) {
+        fetchFailures.push({
+          url: String(args[0]),
+          aborted: args[1]?.signal?.aborted,
+          name: (error as Error).name,
+          message: (error as Error).message,
+        });
+        throw error;
       } finally {
         fetches--;
       }
@@ -372,7 +382,11 @@ test('50 mount/destroy cycles leave no viewers, loads, observers or animations r
         duration: 0,
       });
       b.on('pagechange', () => events++);
-      await b.ready;
+      await b.ready.catch((error: Error & { cause?: Error }) => {
+        throw new Error(
+          `Mount ${i}: ${error.message}; cause=${error.cause?.name}: ${error.cause?.message}; fetchFailures=${JSON.stringify((window as any).fetchFailures)}`,
+        );
+      });
       b.destroy();
       b.next();
     }
