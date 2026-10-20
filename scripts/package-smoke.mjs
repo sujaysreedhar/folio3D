@@ -25,7 +25,8 @@ run(
     'install',
     resolve(artifacts, packed[0].filename),
     '--ignore-scripts',
-    '--offline',
+    // npm ci caches pinned tarballs, but a fresh consumer may still need metadata.
+    '--prefer-offline',
     '--no-audit',
     '--no-fund',
   ],
