@@ -2,7 +2,12 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   root: 'demo',
   base: './',
-  server: { fs: { allow: ['..'] } },
+  server: {
+    // CI needs no live reload. Its socket can trigger the bundled Linux WebKit
+    // network-process crash during cancellation: microsoft/playwright#42803.
+    hmr: !process.env.CI,
+    fs: { allow: ['..'] },
+  },
   build: {
     outDir: '../demo-dist',
     emptyOutDir: true,
