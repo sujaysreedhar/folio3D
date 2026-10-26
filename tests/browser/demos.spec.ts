@@ -1,6 +1,36 @@
 import { test, expect } from '@playwright/test';
 import { resolve } from 'node:path';
 
+test('homepage controls fit a narrow screen and expose upload keyboard focus', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.goto('/');
+  await expect(page.locator('#book')).toHaveAttribute('aria-busy', 'false');
+  await expect(page.getByRole('button', { name: 'Open lightbox' })).toBeEnabled();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  await page.locator('#file').focus();
+  await expect(page.locator('label[for="file"]')).toHaveCSS('outline-style', 'solid');
+  await page.getByRole('button', { name: 'Sample PDF', exact: true }).click();
+  await expect(page.locator('#publication-status')).toHaveText('Sample PDF · 6 pages');
+  await expect(page.locator('#book')).toHaveAttribute('aria-busy', 'false');
+});
+
+test('homepage reader survives persisted navigation and remains interactive', async ({
+  page,
+}, info) => {
+  await page.goto('/');
+  const book = page.getByRole('region', { name: 'Image book', exact: true });
+  await expect(book).toHaveAttribute('data-status', 'ready');
+  await page.evaluate(() => {
+    dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true }));
+    dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+  });
+  await expect(book).toHaveAttribute('data-status', 'ready');
+  await book.getByRole('button', { name: 'Next page', exact: true }).click();
+  await expect(book.getByRole('spinbutton', { name: 'Page number' })).toHaveValue(
+    info.project.name.endsWith('mobile') ? '3' : '4',
+  );
+});
+
 test('home links to all three demo apps', async ({ page }) => {
   await page.goto('/');
   for (const [name, path] of [

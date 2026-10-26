@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { fileURLToPath } from 'node:url';
 export default defineConfig({
   root: 'demo',
   base: './',
@@ -8,10 +9,10 @@ export default defineConfig({
     emptyOutDir: true,
     rolldownOptions: {
       input: {
-        main: 'demo/index.html',
-        catalog: 'demo/demos/catalog.html',
-        portfolio: 'demo/demos/portfolio.html',
-        bookshelf: 'demo/demos/bookshelf.html',
+        main: fileURLToPath(new URL('./demo/index.html', import.meta.url)),
+        catalog: fileURLToPath(new URL('./demo/demos/catalog.html', import.meta.url)),
+        portfolio: fileURLToPath(new URL('./demo/demos/portfolio.html', import.meta.url)),
+        bookshelf: fileURLToPath(new URL('./demo/demos/bookshelf.html', import.meta.url)),
       },
     },
   },

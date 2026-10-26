@@ -21,6 +21,7 @@ const images: Source = {
 const pdf: Source = { type: 'pdf', data: new URL('samples/magazine.pdf', base).href };
 const mount = document.querySelector<HTMLElement>('#book')!,
   status = document.querySelector<HTMLElement>('#publication-status')!;
+const lightbox = document.querySelector<HTMLButtonElement>('#lightbox')!;
 let book: Flipbook | undefined,
   currentSource: Source = images,
   currentTitle = 'Image book';
@@ -61,6 +62,8 @@ async function show(source: Source, title: string, initialPage = 1) {
   book?.destroy();
   currentSource = source;
   currentTitle = title;
+  mount.setAttribute('aria-busy', 'true');
+  lightbox.disabled = true;
   document.querySelector('#images')!.setAttribute('aria-pressed', String(source === images));
   document.querySelector('#pdf')!.setAttribute('aria-pressed', String(source === pdf));
   status.textContent = `Opening ${title.toLowerCase()}…`;
@@ -78,10 +81,15 @@ async function show(source: Source, title: string, initialPage = 1) {
     if (book !== next) return;
     const state = next.getState();
     status.textContent = `${title} · ${state.pageCount} pages`;
+    lightbox.disabled = false;
   } catch (e) {
     if (book === next)
       status.textContent =
-        (e as Error).name === 'AbortError' ? 'Book closed.' : 'Unable to open this publication.';
+        (e as Error).name === 'AbortError'
+          ? 'Book closed.'
+          : 'Unable to open this publication. Try a sample or choose another PDF.';
+  } finally {
+    if (book === next) mount.setAttribute('aria-busy', 'false');
   }
 }
 document
@@ -94,7 +102,8 @@ document.querySelector<HTMLInputElement>('#file')!.addEventListener('change', (e
   if (file) void show({ type: 'pdf', data: file }, file.name);
   input.value = '';
 });
-document.querySelector('#lightbox')!.addEventListener('click', () => {
+lightbox.addEventListener('click', () => {
+  lightbox.focus();
   const modal = openFlipbook({
     source: currentSource,
     label: currentTitle,
@@ -132,5 +141,7 @@ function copyExample(buttonId: string, snippetId: string, label: string): void {
 copyExample('#copy', '#snippet', 'Copy code');
 copyExample('#copy-css', '#css-snippet', 'Copy CSS');
 updateSnippet();
-window.addEventListener('pagehide', () => book?.destroy(), { once: true });
+window.addEventListener('pagehide', (event) => {
+  if (!event.persisted) book?.destroy();
+});
 void show(images, 'Image book', 2);

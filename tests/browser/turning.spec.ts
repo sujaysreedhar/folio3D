@@ -151,6 +151,7 @@ async function trackAudio(page: Page) {
   return page.evaluate(() => {
     if (typeof window.AudioContext !== 'function') return false;
     const stats = { created: 0, played: 0, closed: 0 };
+    const decoded: number[] = [];
     const NativeContext = window.AudioContext;
     window.AudioContext = class extends NativeContext {
       constructor(options?: AudioContextOptions) {
@@ -162,16 +163,27 @@ async function trackAudio(page: Page) {
         const start = source.start.bind(source);
         source.start = (...args: Parameters<typeof start>) => {
           stats.played++;
+          Object.assign(window, {
+            playedSound: {
+              duration: source.buffer?.duration,
+              channels: source.buffer?.numberOfChannels,
+            },
+          });
           start(...args);
         };
         return source;
+      }
+      async decodeAudioData(...args: Parameters<AudioContext['decodeAudioData']>) {
+        const buffer = await super.decodeAudioData(...args);
+        decoded.push(buffer.duration);
+        return buffer;
       }
       close() {
         stats.closed++;
         return super.close();
       }
     };
-    Object.assign(window, { audioStats: stats });
+    Object.assign(window, { audioStats: stats, decodedSounds: decoded });
     return true;
   });
 }
@@ -183,8 +195,13 @@ test('sound is opt-in, plays on a completed turn, mutes and closes on destroy', 
     !(await trackAudio(page)),
     'Audio playback is unavailable in this environment; fallback is tested separately.',
   );
+  const audioRequests: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().endsWith('/page-turn.wav')) audioRequests.push(request.url());
+  });
   await mount(page, { pageMode: 'single' });
   expect(await page.evaluate(() => (window as any).audioStats.created)).toBe(0);
+  expect(audioRequests).toHaveLength(0);
   const more = page.getByRole('button', { name: 'More controls' });
   if (await more.isVisible()) await more.click();
   await page.getByRole('button', { name: 'Enable page-turn sound', exact: true }).click();
@@ -195,10 +212,14 @@ test('sound is opt-in, plays on a completed turn, mutes and closes on destroy', 
   await page.getByRole('button', { name: 'Next page', exact: true }).click();
   await selected(page, 2);
   await expect.poll(() => page.evaluate(() => (window as any).audioStats.played)).toBe(1);
+  const recording = await page.evaluate(() => (window as any).playedSound);
+  expect(recording.duration).toBeCloseTo(0.8865, 3);
+  expect(recording.channels).toBe(2);
   await drag(page, 0.6, 0.55);
   await page.mouse.up();
   await selected(page, 2);
   expect(await page.evaluate(() => (window as any).audioStats.played)).toBe(1);
+  expect(audioRequests).toHaveLength(1);
   if (await more.isVisible()) await more.click();
   await page.getByRole('button', { name: 'Mute page-turn sound', exact: true }).click();
   await page.getByRole('button', { name: 'Next page', exact: true }).click();
@@ -213,6 +234,51 @@ test('sound is opt-in, plays on a completed turn, mutes and closes on destroy', 
     played: 1,
     closed: 1,
   });
+});
+
+test('missing page-turn recording leaves navigation usable and can be retried', async ({
+  page,
+}) => {
+  test.skip(!(await trackAudio(page)), 'Audio playback is unavailable in this environment.');
+  await page.route('**/page-turn.wav', (route) => route.fulfill({ status: 404 }));
+  await mount(page, { sound: true, renderer: 'flat', pageMode: 'single' });
+  const failed = page.waitForResponse('**/page-turn.wav');
+  await page.getByRole('button', { name: 'Next page', exact: true }).click();
+  expect((await failed).status()).toBe(404);
+  await selected(page, 2);
+  expect(await page.evaluate(() => (window as any).audioStats.played)).toBe(0);
+  await page.unroute('**/page-turn.wav');
+  await page.getByRole('button', { name: 'Next page', exact: true }).click();
+  await selected(page, 3);
+  await expect.poll(() => page.evaluate(() => (window as any).audioStats.played)).toBe(1);
+});
+
+test('muting while the recording loads cancels queued playback even after re-enabling', async ({
+  page,
+}) => {
+  test.skip(!(await trackAudio(page)), 'Audio playback is unavailable in this environment.');
+  let release!: () => void;
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/page-turn.wav', async (route) => {
+    await held;
+    await route.continue();
+  });
+  await mount(page, { sound: true, renderer: 'flat', pageMode: 'single' });
+  await page.getByRole('button', { name: 'Next page', exact: true }).click();
+  await selected(page, 2);
+  await page.evaluate(() => {
+    (window as any).book.setSound(false);
+    (window as any).book.setSound(true);
+  });
+  release();
+  await expect.poll(() => page.evaluate(() => (window as any).decodedSounds.length)).toBe(1);
+  expect(await page.evaluate(() => (window as any).audioStats.played)).toBe(0);
+  await page.getByRole('button', { name: 'Next page', exact: true }).click();
+  await selected(page, 3);
+  await expect.poll(() => page.evaluate(() => (window as any).audioStats.played)).toBe(1);
+  expect(await page.evaluate(() => (window as any).decodedSounds.length)).toBe(1);
 });
 
 test('enabled sound waits for interaction', async ({ page }) => {

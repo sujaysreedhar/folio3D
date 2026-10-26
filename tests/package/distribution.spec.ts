@@ -1,4 +1,16 @@
 import { test, expect } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+
+test('packed and demo assets include the page-turn recording', async ({ request }) => {
+  const recording = await readFile('src/assets/page-turn.wav');
+  for (const path of ['/nested/lib/assets/', '/npm/assets/', '/showcase/lib/assets/']) {
+    const response = await request.get(`${path}page-turn.wav`);
+    expect(response.status()).toBe(200);
+    expect(response.headers()['content-type']).toBe('audio/wav');
+    expect(await response.body()).toEqual(recording);
+  }
+});
+
 for (const path of ['/nested/', '/nested/minified.html', '/npm/'])
   test(`${path} consumer loads PDF and navigates`, async ({ page }) => {
     const errors: string[] = [];

@@ -1,5 +1,13 @@
 # Folio3D verification
 
+## GitHub Actions status — reviewed 2026-10-25
+
+The latest `main` check at `fc91d570c68fc12e1534d8db2d6e635785def23e` passed: [Verify Folio3D #14](https://github.com/sujaysreedhar/folio3D/actions/runs/39390807758). The later diagnostic-branch check [#15](https://github.com/sujaysreedhar/folio3D/actions/runs/39390825783) also passed. Earlier red runs describe historical browser/runtime and packed-consumer failures, rather than a current library compilation failure. The detailed diagnosis and fixes are recorded below.
+
+GitHub warns that the workflow's v4 actions use a deprecated Node runtime and that `ubuntu-latest` is migrating. Those annotations are warnings on successful runs. This status describes the existing commits, not an Actions run of subsequent local changes.
+
+Current cloud validation passed on Node 24.19.0: library and demo builds, strict type checking, 21 unit tests, packed-consumer installation/declaration compilation, and 20 desktop/mobile demo checks using system Chromium. The homepage cache-lifecycle regression failed in both Chromium configurations before the fix and passed afterward. The demo input paths now resolve absolutely so Vite's development dependency scanner can find them. Homepage controls also cover 320px overflow, keyboard upload focus and PDF selection. Firefox/WebKit and the complete package-browser matrix were not rerun here: matching Playwright browser downloads were denied by the cloud network policy. These local checks do not establish a new hosted CI result.
+
 ## Version 0.3.0 — 2026-10-19
 
 Published [v0.3.0](https://github.com/sujaysreedhar/folio3D/releases/tag/v0.3.0) from source `ba95cafe0d326b1aac8a19520951019674397c09`. The live demo deployment is `d4275d0b96776508588ba9ad9bb64f67ff92dc47` on the `docs` branch, preserving the existing custom domain. [GitHub Pages deployment succeeded](https://github.com/sujaysreedhar/folio3D/actions/runs/39268351403).

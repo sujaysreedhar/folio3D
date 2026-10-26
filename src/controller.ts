@@ -117,7 +117,7 @@ export class FlipbookController implements Flipbook {
       renderer: 'flat',
       status: 'loading',
     };
-    this.sound = new PageTurnSound(this.state.sound);
+    this.sound = new PageTurnSound(this.state.sound, new URL('page-turn.wav', assetBase).href);
     this.ui = new ReaderUI(
       container,
       options.label ?? 'Interactive flipbook',

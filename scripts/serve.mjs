@@ -17,6 +17,7 @@ const mime = {
   '.pdf': 'application/pdf',
   '.png': 'image/png',
   '.wasm': 'application/wasm',
+  '.wav': 'audio/wav',
   '.json': 'application/json',
   '.txt': 'text/plain',
 };

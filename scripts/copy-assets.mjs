@@ -2,6 +2,7 @@ import { cp, mkdir, rm } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
 await mkdir('dist/assets', { recursive: true });
 await mkdir('dist/licenses', { recursive: true });
+await cp('src/assets/page-turn.wav', 'dist/assets/page-turn.wav');
 for (const name of ['pdf.worker.min.mjs', 'cmaps', 'standard_fonts', 'wasm']) {
   const source = name.endsWith('.mjs')
     ? `node_modules/pdfjs-dist/legacy/build/${name}`

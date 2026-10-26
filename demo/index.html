@@ -11,6 +11,7 @@
     <title>Folio3D — A little more dimension</title>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <header class="site-nav">
       <a class="wordmark" href="#"
         >folio<span>3D</span><span class="brand-leaf" aria-hidden="true">/</span></a
@@ -20,7 +21,7 @@
         ><a href="./LICENSE.txt">MIT license ↗</a>
       </nav>
     </header>
-    <main>
+    <main id="main-content" tabindex="-1">
       <section class="intro">
         <p class="eyebrow">An open-source reading experience</p>
         <h1>Give your pages<br />another dimension.</h1>
@@ -56,13 +57,15 @@
               class="visually-hidden"
               type="file"
               accept="application/pdf,.pdf"
-            /><button id="lightbox">Open lightbox ↗</button>
+            /><button id="lightbox" disabled>Open lightbox ↗</button>
           </div>
         </div>
-        <div id="book" class="book-mount"></div>
+        <div id="book" class="book-mount" aria-busy="true"></div>
         <div class="book-caption">
           <p>Drag to turn. Browse pages and contents, or bookmark a place to return to.</p>
-          <span id="publication-status" role="status">Opening the image book…</span>
+          <span id="publication-status" role="status" aria-atomic="true"
+            >Opening the image book…</span
+          >
         </div>
       </section>
       <section id="demos" class="demo-gallery" aria-labelledby="demos-title">

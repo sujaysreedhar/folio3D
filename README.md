@@ -40,13 +40,15 @@ All sample artwork is original and included in the repository. Demo interactions
 
 ## Run locally
 
-Clone or download this repository, open a terminal in its root directory, and use **Node.js 22.13+** and **npm**:
+Clone or download this repository, open a terminal in its root directory, and use **Node.js 24** (the CI version; minimum 22.13) and **npm**. No backend, database, API key or account is required:
 
 ```sh
 npm ci
 npm run build
 npm run dev
 ```
+
+Use `npm ci` to install the versions in `package-lock.json`. The first build creates the library, declarations and PDF worker/support assets consumed by the demo. Starting Vite before building can produce missing-package or missing-asset errors.
 
 Open the URL printed by Vite (normally `http://127.0.0.1:5173`). The main playground and all three demo apps are available from the homepage. The demo consumes the built package, so run `npm run build` again after changing library code. Vite reloads changes to the demo's HTML, TypeScript and CSS automatically.
 
@@ -179,7 +181,7 @@ Caller-owned byte arrays are copied before PDF.js receives them. URLs follow nor
 | `assetBaseUrl`   | Distribution-relative  | Directory containing worker, cmaps, standard_fonts, wasm                                  |
 | `memoryBudgetMB` | `96`                   | Owned raster/texture allocation budget; minimum 1 MiB                                     |
 | `duration`       | `600`                  | Full page-turn duration in milliseconds; zero is immediate                                |
-| `sound`          | `false`                | Enable synthesized page-turn audio after a user interaction                               |
+| `sound`          | `false`                | Enable the recorded page-turn sound after a user interaction                              |
 | `label`          | `Interactive flipbook` | Accessible region/dialog name                                                             |
 | `theme`          | `classic`              | `classic`, `modern`, `sepia`, `midnight`, `ocean`, `forest`, `slate`, `high-contrast`     |
 | `themeOverrides` | `{}`                   | Partial `ThemeTokens`: ink, paper, stage, muted, border, hover, accent, font              |
@@ -188,7 +190,7 @@ Caller-owned byte arrays are copied before PDF.js receives them. URLs follow nor
 
 Zoom is clamped to 1×–3×. Texture edges are capped at 2048 pixels and DPR at 2. Pages of different sizes/rotations fit the first page's book dimensions with white letterboxing. Double mode starts blank|1, then 2|3 and 4|5. Blank partners do not change the page count. Single mode moves one page at a time.
 
-Sound uses Web Audio without downloaded audio files. Set `sound: true` to enable it initially. Cancelled drags, boundary navigation and changes within the same spread are silent. Unsupported or blocked audio leaves navigation usable. The main playground enables sound after interaction; the library default is silent.
+Sound uses the bundled `assets/page-turn.wav` recording through Web Audio. Set `sound: true` to enable it initially. The clip loads after an interaction with sound enabled, then its decoded buffer is reused for later turns. Keep it with the other distribution assets, or serve it from your configured `assetBaseUrl`; allow that location in your CSP `connect-src` policy. Cancelled drags, boundary navigation and changes within the same spread are silent. Missing or blocked audio leaves navigation usable. The main playground enables sound after interaction; the library default is silent.
 
 ## Handle and events
 
@@ -228,6 +230,29 @@ Not included in v0.2: search, selectable PDF text, interactive annotations, pass
 
 ## Develop and verify
 
+For routine changes, run the following from the repository root, in this order:
+
+```sh
+npm ci
+npm run build          # required before typecheck: the demo imports the built package
+npm run typecheck
+npm test
+npm run build:demo
+```
+
+The browser suites add desktop and touch coverage in Chromium, Firefox and WebKit. On Ubuntu, install the matching browsers **and system dependencies** before running them:
+
+```sh
+npx playwright install --with-deps chromium firefox webkit
+npm run test:browser
+npm run test:demos
+npm run test:package
+```
+
+The Linux test wrapper starts Xvfb for software WebGL. System-dependency installation may require administrator access. Browser downloads require access to Playwright's download hosts in addition to the npm registry. `test:package` builds real consumers of the packed library; it also needs the preceding library and demo builds. These checks do not publish anything.
+
+Regenerating fixtures and preparing release archives are separate maintainer tasks; neither is required to start development:
+
 ```sh
 npm run fixtures       # regenerate original SVG/PDF fixtures
 npm run typecheck
@@ -240,6 +265,19 @@ npm run test:demos     # test the built demo apps in desktop and mobile browser 
 npm run test:package
 npm run release
 ```
+
+### Troubleshooting builds and browser checks
+
+| Symptom                                              | What to check                                                                                                                                                                   |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cannot resolve `folio3d`, declarations or PDF assets | Run `npm run build` before type checking, starting the demo or building the site. Rebuild after changing library code.                                                          |
+| Browser executable missing or `xvfb-run` missing     | Run the Playwright install command above with `--with-deps`. Use the lockfile-pinned CLI rather than a global Playwright installation.                                          |
+| Linux Firefox cannot create WebGL2                   | Use `npm run test:browser`, which starts the virtual display and checks graphics support, rather than invoking the whole matrix directly.                                       |
+| WebKit reports `Network process crashed`             | Keep the pinned Playwright 1.64.0 and install its matching browsers. Earlier Linux builds had a native network-process crash; see [verification history](docs/VERIFICATION.md). |
+| Packed consumer reports `ENOTCACHED`                 | Allow npm registry access. The package smoke test prefers cached files but may need metadata from the registry.                                                                 |
+| Vite reports chunks larger than 500 kB               | This is an advisory for the lazy PDF/WebGL dependencies. Check the exit status and later CI steps before treating it as a build failure.                                        |
+
+In GitHub Actions, open **Verify Folio3D → verify** and find the first failing step. Library compilation, demo compilation and browser checks are separate stages. Download `verification-evidence` for browser diagnostics; older failed runs remain visible after a fix. See [the verification report](docs/VERIFICATION.md) for the documented CI failures and fixes.
 
 Geometry inspection at `/probe.html` in the development server includes a progress scrubber. It is excluded from the static demo build. Tests save visual frames under `artifacts`; release notes and the persistent milestone ledger live in `docs`.
 
