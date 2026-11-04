@@ -38,10 +38,11 @@ await writeFile(
   `import { createFlipbook, type FlipbookOptions } from 'folio3d';
 import { createFlipbook as createMinified } from 'folio3d/min';
 const minifiedFactory: typeof createFlipbook = createMinified;
-const options: FlipbookOptions = { source: { type: 'images', pages: [{ src: '/one.svg' }] }, sound: true, theme: 'modern', contents: [{ title: 'Start', page: 1 }], storageKey: 'types-test' };
+const options: FlipbookOptions = { source: { type: 'images', pages: [{ src: '/one.svg' }] }, sound: true, maxPixelRatio: 1.5, memoryBudgetMB: 32, theme: 'modern', contents: [{ title: 'Start', page: 1 }], storageKey: 'types-test' };
 const book = createFlipbook(document.createElement('div'), options);
 book.on('pagechange', state => { const page: number = state.page; console.log(page); });
 book.on('soundchange', state => { const sound: boolean = state.sound; console.log(sound); });
+book.on('loadprogress', progress => { const loaded: number = progress.loaded; const total: number | undefined = progress.total; console.log(loaded, total); });
 book.setSound(false);
 book.setTheme('ocean');
 book.setThemeOverrides({ paper: '#f1fafb', font: 'Georgia, serif' });

@@ -16,6 +16,7 @@ import { FlatBookRenderer } from './renderers/flat';
 import type { BookRenderer, View } from './renderers/renderer';
 import { ReaderUI, type Action } from './ui';
 import { PageTurnSound } from './sound';
+import { renderPolicy } from './performance';
 import { Bookmarks } from './bookmarks';
 import { ReaderNavigation } from './navigation';
 import { applyTheme, normalizeThemeOverrides, validateTheme } from './themes';
@@ -51,6 +52,7 @@ export class FlipbookController implements Flipbook {
   private readonly ui: ReaderUI;
   private readonly observer: ResizeObserver;
   private readonly sound: PageTurnSound;
+  private readonly performance: ReturnType<typeof renderPolicy>;
   private readonly navigation: ReaderNavigation;
   private bookmarks?: Bookmarks;
   private contentsPromise?: Promise<ContentsEntry[]>;
@@ -105,6 +107,14 @@ export class FlipbookController implements Flipbook {
       (!Number.isFinite(options.duration) || options.duration < 0)
     )
       throw new RangeError('duration must be nonnegative.');
+    if (
+      options.maxPixelRatio !== undefined &&
+      (!Number.isFinite(options.maxPixelRatio) ||
+        options.maxPixelRatio < 0.5 ||
+        options.maxPixelRatio > 3)
+    )
+      throw new RangeError('maxPixelRatio must be between 0.5 and 3.');
+    this.performance = renderPolicy(options, navigator, devicePixelRatio);
     this.state = {
       page: options.initialPage ?? 1,
       pageCount: 0,
@@ -188,8 +198,18 @@ export class FlipbookController implements Flipbook {
   private async initialize(): Promise<void> {
     const rendererReady = this.loadRenderer();
     try {
-      this.provider = await openDocument(this.options.source, this.assetBase, this.lifetime.signal);
+      this.provider = await openDocument(
+        this.options.source,
+        this.assetBase,
+        this.lifetime.signal,
+        (progress) => {
+          if (!this.alive() || this.state.status !== 'loading') return;
+          this.ui.progress(progress);
+          this.emit('loadprogress', { ...progress });
+        },
+      );
       this.checkAlive();
+      this.ui.status('Preparing pages…');
       this.state.pageCount = this.provider.pageCount;
       this.bookmarks = new Bookmarks(
         this.state.pageCount,
@@ -201,7 +221,7 @@ export class FlipbookController implements Flipbook {
         },
         this.lifetime.signal,
       );
-      const budget = (this.options.memoryBudgetMB ?? 96) * 1024 * 1024;
+      const budget = this.performance.memoryBudgetMB * 1024 * 1024;
       const thumbnailBudget = Math.min(6 * 120 * 160 * 8, budget / 8);
       this.navigation.connect(this.provider, thumbnailBudget);
       validatePage(this.state.page, this.state.pageCount);
@@ -243,7 +263,7 @@ export class FlipbookController implements Flipbook {
     ) {
       try {
         if (!this.WebGLRenderer) throw new Error('WebGL renderer unavailable.');
-        this.renderer = new this.WebGLRenderer(() => this.fallback());
+        this.renderer = new this.WebGLRenderer(() => this.fallback(), this.performance.pixelRatio);
         this.state.renderer = 'webgl';
       } catch {
         this.renderer = new FlatBookRenderer();
@@ -274,7 +294,7 @@ export class FlipbookController implements Flipbook {
       64,
       Math.min((this.width * 0.94) / columns, (this.height * 0.92) / ratio),
     );
-    const multiplier = Math.min(devicePixelRatio || 1, 2) * this.state.zoom;
+    const multiplier = this.performance.pixelRatio * this.state.zoom;
     return { width: Math.ceil(width * multiplier), height: Math.ceil(width * ratio * multiplier) };
   }
   private snapshot(pages: (number | null)[], surfaces: View['surfaces']): View {
@@ -373,6 +393,7 @@ export class FlipbookController implements Flipbook {
     if (this.options.renderer !== 'webgl' && this.motion.matches) this.fallback();
   };
   private fail(value: unknown, initial = false): void {
+    if (!this.alive() || (initial && this.state.status === 'error')) return;
     clearTimeout(this.statusTimer);
     const error = value instanceof Error ? value : new Error(String(value));
     if (error.name === 'AbortError') return;
@@ -529,6 +550,7 @@ export class FlipbookController implements Flipbook {
     this.drain();
   }
   private prefetch(): void {
+    if (!this.performance.prefetch) return;
     this.scheduler?.prefetch(
       [
         ...new Set(

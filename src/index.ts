@@ -9,6 +9,7 @@ export type {
   Theme,
   ThemeTokens,
   ContentsEntry,
+  LoadProgress,
 } from './types';
 import type { Flipbook, FlipbookOptions } from './types';
 import { FlipbookController } from './controller';

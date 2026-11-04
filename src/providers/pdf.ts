@@ -1,5 +1,11 @@
-import type { ContentsEntry, DocumentProvider, PageSize, PageSurface } from '../types';
-import { checkAbort, contain, createSurface } from './surface';
+import type {
+  ContentsEntry,
+  DocumentProvider,
+  PageSize,
+  PageSurface,
+  LoadProgress,
+} from '../types';
+import { abortable, checkAbort, contain, createSurface } from './surface';
 import type { PDFDocumentProxy, PDFDocumentLoadingTask } from 'pdfjs-dist';
 
 export class PDFProvider implements DocumentProvider {
@@ -15,6 +21,7 @@ export class PDFProvider implements DocumentProvider {
     data: string | Blob | Uint8Array,
     assetBase: string,
     signal: AbortSignal,
+    progress?: (value: LoadProgress) => void,
   ): Promise<PDFProvider> {
     checkAbort(signal);
     const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
@@ -25,7 +32,7 @@ export class PDFProvider implements DocumentProvider {
         : {
             data:
               data instanceof Blob
-                ? new Uint8Array(await data.arrayBuffer())
+                ? new Uint8Array(await abortable(data.arrayBuffer(), signal))
                 : new Uint8Array(data),
           };
     checkAbort(signal);
@@ -40,20 +47,43 @@ export class PDFProvider implements DocumentProvider {
       wasmUrl: new URL('wasm/', assetBase).href,
     });
     const cancel = () => {
-      void task.destroy();
+      void task.destroy().catch(() => {});
+    };
+    task.onProgress = ({ loaded, total }: { loaded: number; total: number }) => {
+      if (signal.aborted || !Number.isFinite(loaded) || loaded < 0) return;
+      progress?.({
+        loaded,
+        total: Number.isFinite(total) && total > 0 && total >= loaded ? total : undefined,
+      });
     };
     signal.addEventListener('abort', cancel, { once: true });
     try {
-      const document = await task.promise;
+      const document = await abortable(task.promise, signal);
       checkAbort(signal);
       return new PDFProvider(document, task);
     } catch (e) {
-      void task.destroy();
+      void task.destroy().catch(() => {});
       checkAbort(signal);
       const error = e as Error;
       if (error.name === 'PasswordException')
         throw new Error(
           'This PDF requires a password. Password-protected documents are not supported.',
+        );
+      if (error.name === 'InvalidPDFException')
+        throw new Error(
+          'PDF could not be opened. The file is damaged or is not a valid PDF. Choose another file.',
+          { cause: e },
+        );
+      if ((error as Error & { status?: number }).status === 404)
+        throw new Error(
+          'PDF could not be opened. The file was not found (HTTP 404). Check the link or choose another PDF.',
+          { cause: e },
+        );
+      const status = (error as Error & { status?: number }).status;
+      if (typeof status === 'number' && status >= 400)
+        throw new Error(
+          `PDF could not be opened. The server returned HTTP ${status}. Check your connection and try again.`,
+          { cause: e },
         );
       if (/worker|fetch.*module/i.test(error.message))
         throw new Error(
@@ -61,10 +91,11 @@ export class PDFProvider implements DocumentProvider {
           { cause: e },
         );
       throw new Error(
-        `PDF could not be opened. Check the file, URL and CORS headers. ${error.message}`,
+        'PDF could not be opened. Check your connection and try again. For a remote file, check its URL and CORS headers.',
         { cause: e },
       );
     } finally {
+      task.onProgress = () => {};
       signal.removeEventListener('abort', cancel);
     }
   }
@@ -153,6 +184,6 @@ export class PDFProvider implements DocumentProvider {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
-    void this.task.destroy();
+    void this.task.destroy().catch(() => {});
   }
 }

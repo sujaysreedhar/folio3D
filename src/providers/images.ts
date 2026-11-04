@@ -14,7 +14,9 @@ async function loadImage(
     throw new Error(`Image could not be loaded. Check its URL and CORS headers.`, { cause: e });
   }
   if (!response.ok) throw new Error(`Image request failed (HTTP ${response.status}).`);
-  const url = URL.createObjectURL(await response.blob()),
+  const blob = await response.blob();
+  checkAbort(signal);
+  const url = URL.createObjectURL(blob),
     image = new Image();
   const dispose = () => {
     image.src = '';

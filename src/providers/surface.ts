@@ -34,3 +34,13 @@ export function contain(
 export function checkAbort(signal: AbortSignal): void {
   if (signal.aborted) throw new DOMException('Document load cancelled.', 'AbortError');
 }
+
+/** Stop waiting for work that cannot itself be cancelled, such as Blob.arrayBuffer(). */
+export function abortable<T>(operation: Promise<T>, signal: AbortSignal): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const cancel = () => reject(new DOMException('Document load cancelled.', 'AbortError'));
+    signal.addEventListener('abort', cancel, { once: true });
+    operation.then(resolve, reject).finally(() => signal.removeEventListener('abort', cancel));
+    if (signal.aborted) cancel();
+  });
+}

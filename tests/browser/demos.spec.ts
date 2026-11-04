@@ -1,6 +1,72 @@
 import { test, expect } from '@playwright/test';
 import { resolve } from 'node:path';
 
+test('homepage can retry a failed PDF without reloading and preserves mute', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 });
+  let fail = true;
+  await page.route('**/samples/magazine.pdf', (route) =>
+    fail ? route.fulfill({ status: 503, body: 'Temporarily unavailable' }) : route.continue(),
+  );
+  await page.goto('/');
+  await expect(page.locator('#book .folio3d')).toHaveAttribute('data-status', 'ready');
+  const more = page.getByRole('button', { name: 'More controls' });
+  if (await more.isVisible()) await more.click();
+  await page.getByRole('button', { name: 'Mute page-turn sound', exact: true }).click();
+  await page.getByRole('button', { name: 'Sample PDF', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('Check your connection');
+  expect(await page.getByRole('alert').evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(
+    true,
+  );
+  await expect(page.getByRole('button', { name: 'Retry', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Open lightbox' })).toBeDisabled();
+  fail = false;
+  await page.getByRole('button', { name: 'Retry', exact: true }).click();
+  await expect(page.locator('#publication-status')).toHaveText('Sample PDF · 6 pages');
+  await expect(page.getByRole('button', { name: 'Retry', exact: true })).toBeHidden();
+  if (await more.isVisible()) await more.click();
+  await expect(
+    page.getByRole('button', { name: 'Enable page-turn sound', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('#book .folio3d')).toHaveCount(1);
+});
+
+test('switching away from a pending PDF keeps the new reader and lightbox current', async ({
+  page,
+}) => {
+  let started!: () => void, release!: () => void, completed!: () => void;
+  const requested = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const finished = new Promise<void>((resolve) => {
+    completed = resolve;
+  });
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.route('**/samples/magazine.pdf', async (route) => {
+    started();
+    await gate;
+    await route.continue().catch(() => {});
+    completed();
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Sample PDF', exact: true }).click();
+  await requested;
+  await page.getByRole('button', { name: 'Image book', exact: true }).click();
+  await expect(page.locator('#publication-status')).toHaveText('Image book · 6 pages');
+  release();
+  await finished;
+  await expect(page.locator('#book .folio3d')).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Retry', exact: true })).toBeHidden();
+  await page.getByRole('button', { name: 'Open lightbox' }).click();
+  await expect(
+    page.getByRole('dialog', { name: 'Image book', exact: true }).locator('.folio3d'),
+  ).toHaveAttribute('data-status', 'ready');
+  expect(errors).toEqual([]);
+});
+
 test('homepage controls fit a narrow screen and expose upload keyboard focus', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 844 });
   await page.goto('/');

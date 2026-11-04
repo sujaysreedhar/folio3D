@@ -226,9 +226,11 @@
   left: 50%;
   top: 42%;
   transform: translate(-50%, -50%);
+  width: max-content;
   max-width: min(420px, 85%);
   padding: 15px 22px;
   text-align: center;
+  overflow-wrap: anywhere;
   background: var(--folio-paper);
   border: 1px solid var(--folio-border);
   border-radius: 6px;
@@ -240,6 +242,12 @@
 }
 .folio3d-message[role='alert'] {
   color: var(--folio-accent);
+}
+.folio3d-message progress {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  accent-color: var(--folio-accent);
 }
 .folio3d-sr {
   position: absolute;

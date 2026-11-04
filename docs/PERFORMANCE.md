@@ -1,5 +1,11 @@
 # Folio3D 0.3.0 performance
 
+## Unreleased: constrained-device defaults
+
+Readers now use a 32 MiB raster/texture budget and a 1.5 pixel-ratio cap when the browser reports at most 4 GiB of memory or four logical processors. Other devices retain the 96 MiB budget and cap of 2. Explicit `memoryBudgetMB` and `maxPixelRatio` options override those defaults. Browser data-saving mode disables adjacent-page prefetch while preserving visible-page rendering and navigation.
+
+At the same CSS dimensions, a cap of 1.5 instead of 2 uses 56.25% as many raster pixels (about 44% fewer), with reduced sharpness. Chromium checks with a simulated 3× display and constrained-device hints verify the actual WebGL drawing-buffer ratio, configured memory budget, quality override and absence of speculative image requests. They do not establish a physical-device frame-rate improvement. The historical measurements below describe the released 0.3.0 build.
+
 Matched local measurements on 2026-10-19 compare the v0.2.1 distribution with the final v0.3.0 runtime. Initial minified entry gzip size fell from **142,377 to 11,993 bytes (91.6%)**. Flat/reduced-motion readers skip Three.js entirely. PDF modules, workers and source files are separate transfers; this is not the total download size of a PDF reader.
 
 ## Hardware GPU

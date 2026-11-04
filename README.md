@@ -178,8 +178,9 @@ Caller-owned byte arrays are copied before PDF.js receives them. URLs follow nor
 | `renderer`       | `auto`                 | `auto`, `webgl`, `flat`; unavailable/lost WebGL falls back to flat                        |
 | `pageMode`       | `auto`                 | `auto`, `single`, `double`; auto switches below 720 container pixels                      |
 | `initialPage`    | `1`                    | One-based starting page                                                                   |
-| `assetBaseUrl`   | Distribution-relative  | Directory containing worker, cmaps, standard_fonts, wasm                                  |
-| `memoryBudgetMB` | `96`                   | Owned raster/texture allocation budget; minimum 1 MiB                                     |
+| `assetBaseUrl`   | Distribution-relative  | Directory containing worker, cmaps, standard_fonts, wasm and page-turn.wav                |
+| `memoryBudgetMB` | `32` or `96`           | Owned raster/texture allocation budget; minimum 1 MiB                                     |
+| `maxPixelRatio`  | `1.5` or `2`           | Maximum raster/WebGL pixel ratio; accepts 0.5–3                                           |
 | `duration`       | `600`                  | Full page-turn duration in milliseconds; zero is immediate                                |
 | `sound`          | `false`                | Enable the recorded page-turn sound after a user interaction                              |
 | `label`          | `Interactive flipbook` | Accessible region/dialog name                                                             |
@@ -188,7 +189,7 @@ Caller-owned byte arrays are copied before PDF.js receives them. URLs follow nor
 | `contents`       | PDF outline or empty   | Nested `{ title, page?, children? }` entries; overrides PDF contents                      |
 | `storageKey`     | unset                  | Unique document/version key for persistent local bookmarks; unset keeps them per instance |
 
-Zoom is clamped to 1×–3×. Texture edges are capped at 2048 pixels and DPR at 2. Pages of different sizes/rotations fit the first page's book dimensions with white letterboxing. Double mode starts blank|1, then 2|3 and 4|5. Blank partners do not change the page count. Single mode moves one page at a time.
+Zoom is clamped to 1×–3×. Texture edges are capped at 2048 pixels; the rendering pixel ratio uses the adaptive cap or your explicit `maxPixelRatio`. Pages of different sizes/rotations fit the first page's book dimensions with white letterboxing. Double mode starts blank|1, then 2|3 and 4|5. Blank partners do not change the page count. Single mode moves one page at a time.
 
 Sound uses the bundled `assets/page-turn.wav` recording through Web Audio. Set `sound: true` to enable it initially. The clip loads after an interaction with sound enabled, then its decoded buffer is reused for later turns. Keep it with the other distribution assets, or serve it from your configured `assetBaseUrl`; allow that location in your CSP `connect-src` policy. Cancelled drags, boundary navigation and changes within the same spread are silent. Missing or blocked audio leaves navigation usable. The main playground enables sound after interaction; the library default is silent.
 
@@ -202,6 +203,7 @@ Sound uses the bundled `assets/page-turn.wav` recording through Web Audio. Set `
 - `setThemeOverrides(overrides)` replaces the custom token map; `{}` restores host CSS and the current preset. The same tokens apply to the lightbox header. Unknown tokens and invalid CSS values throw before changing the current theme.
 - `getContents()` resolves nested contents after `ready`. PDF named and explicit internal destinations are resolved to one-based pages; external or invalid destinations remain labels. Contents trees are limited to 33 levels. A failed contents lookup can be retried.
 - `getBookmarks()` returns a sorted copy. `toggleBookmark(page?)` adds/removes a page (defaults to current); await `ready` first. Active same-key readers synchronize, and other tabs receive browser storage events. Storage failure falls back to session state. Persistence is origin-local, never an upload or cross-device sync. Use a new key when changing a document's page ordering; local demo file uploads use session bookmarks.
+- `on('loadprogress', callback)` reports PDF download bytes as `{ loaded, total? }`. The reader shows a progress bar while loading; the total is omitted when unknown. Download completion can precede parsing and rendering, so await `ready` before navigating.
 - `getState()` returns a snapshot: `page`, `pageCount`, `visiblePages`, `zoom`, `sound`, `theme`, copied `themeOverrides`, resolved `pageMode`, `renderer`, and `status` (`loading`, `ready`, `turning`, `error`, `destroyed`).
 - `on('pagechange' | 'zoomchange' | 'rendererchange' | 'soundchange' | 'themechange', callback)` delivers state snapshots. `on('bookmarkchange', callback)` delivers sorted page numbers; `on('error', callback)` delivers an `Error`. All return an unsubscribe function. Initial state is available via `ready`/`getState()`.
 - `destroy()` is idempotent. It aborts loading/render work, terminates owned PDF workers, disconnects observers/listeners, cancels animation/timers, closes audio, releases textures/canvases/URLs and removes the viewer. Destroy during loading rejects `ready` with `AbortError`.
@@ -222,7 +224,7 @@ Below 720 reader pixels, the toolbar keeps navigation visible and puts zoom, fit
 
 Serve cross-origin PDFs/images with appropriate CORS response headers. PDF.js can use HTTP range requests when the source server permits them; otherwise it may download the entire PDF. No proxy is included. A CSP must permit your module scripts, source fetches, same-origin module workers and the image Blob URLs used for decoding; image decoding needs `img-src blob:`. Some PDF encoders use WebAssembly decoders; permit those according to your CSP deployment policy.
 
-The 96 MiB budget conservatively accounts for owned canvas pixels plus matching GPU texture capacity, including reserved in-flight surfaces. It does **not** bound the source file, browser decoder buffers, PDF.js internals, driver overhead, geometry/shadow maps, or total tab memory. Up to 0.88 MiB (at most one eighth of the configured budget) is reserved for six thumbnails, capped at 120×160 each and scaled down for small budgets. Closing/changing the navigation view releases its canvases. At most two reader raster tasks and one serialized thumbnail task run concurrently. Visible reader pages have priority, adjacent pages prefetch; unneeded cached pages are evicted. Displayed surfaces stay protected until a replacement succeeds. Lower budgets/resolution limits can reduce visual sharpness. No rendering loop runs while the book is idle.
+The raster/texture budget defaults to 32 MiB on devices reporting at most 4 GiB of memory or at most four logical processors, and 96 MiB otherwise. The pixel-ratio cap similarly defaults to 1.5 or 2. Set `memoryBudgetMB` and `maxPixelRatio` explicitly to override these hints; the latter is also limited by the device pixel ratio. A cap of 1.5 instead of 2 allocates about 44% fewer pixels at the same CSS size, with a sharpness tradeoff. These limits do not guarantee a particular frame rate. The budget conservatively accounts for owned canvas pixels plus matching GPU texture capacity, including reserved in-flight surfaces. It does **not** bound the source file, browser decoder buffers, PDF.js internals, driver overhead, geometry/shadow maps, or total tab memory. Up to 0.88 MiB (at most one eighth of the configured budget) is reserved for six thumbnails, capped at 120×160 each and scaled down for small budgets. Closing/changing the navigation view releases its canvases. At most two reader raster tasks and one serialized thumbnail task run concurrently. Visible reader pages have priority; adjacent pages prefetch unless the browser reports data-saving mode; unneeded cached pages are evicted. Displayed surfaces stay protected until a replacement succeeds. Lower budgets/resolution limits can reduce visual sharpness. No rendering loop runs while the book is idle.
 
 Target modern Chrome/Edge, Firefox and Safari with ES modules, Pointer Events and ResizeObserver. WebGL2 provides 3D; flat mode still supports navigation/zoom. Fullscreen appears only when supported. Playwright WebKit is an engine check, not proof of real iOS device behavior. See [the verification report](docs/VERIFICATION.md) for tested versions, results and remaining limitations.
 
@@ -265,6 +267,12 @@ npm run test:demos     # test the built demo apps in desktop and mobile browser 
 npm run test:package
 npm run release
 ```
+
+### Recover from document loading errors
+
+The homepage shows **Retry** when a publication fails to load. It retries the same file or URL without reloading the site, and keeps your sound preference. Choose another PDF if the file is damaged, missing or password-protected. PDF loading displays a percentage when the total size is known and downloaded bytes otherwise.
+
+For an embedded reader, catch `book.ready` and show a retry control in your application. Destroy the failed reader before calling `createFlipbook` again with the same options. For document switching, destroy the current reader before creating the replacement; pending initialization rejects with `AbortError`, and stale progress cannot update the new reader. A local file conversion already in progress may finish internally after cancellation, but it will not create a PDF worker or install a reader.
 
 ### Troubleshooting builds and browser checks
 

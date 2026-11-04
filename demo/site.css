@@ -228,6 +228,14 @@ h1 {
   overflow-wrap: anywhere;
   text-align: right;
 }
+.book-caption button {
+  min-height: 44px;
+  padding: 8px 18px;
+  color: #fff;
+  background: #294638;
+  border: 0;
+  border-radius: 4px;
+}
 .integration {
   display: grid;
   grid-template-columns: 1fr 1.2fr;

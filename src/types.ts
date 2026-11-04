@@ -21,6 +21,11 @@ export interface ContentsEntry {
 export type Source =
   | { type: 'pdf'; data: string | Blob | Uint8Array }
   | { type: 'images'; pages: Array<{ src: string; alt?: string }> };
+export interface LoadProgress {
+  loaded: number;
+  /** Omitted when the server does not provide a trustworthy total size. */
+  total?: number;
+}
 export interface FlipbookOptions {
   source: Source;
   renderer?: RendererMode;
@@ -28,6 +33,8 @@ export interface FlipbookOptions {
   initialPage?: number;
   assetBaseUrl?: string;
   memoryBudgetMB?: number;
+  /** Maximum raster and WebGL pixel ratio; defaults to an adaptive cap of 1.5 or 2. */
+  maxPixelRatio?: number;
   duration?: number;
   sound?: boolean;
   label?: string;
@@ -56,6 +63,7 @@ export interface FlipbookEvents {
   soundchange: FlipbookState;
   themechange: FlipbookState;
   bookmarkchange: number[];
+  loadprogress: LoadProgress;
   error: Error;
 }
 export interface Flipbook {

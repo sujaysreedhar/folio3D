@@ -153,7 +153,7 @@ test('reports malformed PDFs and failed image URLs', async ({ page }) => {
     }
     return errors;
   });
-  expect(errors[0]).toContain('PDF could not be opened');
+  expect(errors[0]).toContain('The file is damaged or is not a valid PDF');
   expect(errors[1]).toMatch(/Image|image/);
 });
 test('reports password requirements and missing PDF URLs', async ({ page, context }) => {
@@ -178,5 +178,5 @@ test('reports password requirements and missing PDF URLs', async ({ page, contex
     return errors;
   });
   expect(errors[0]).toContain('password');
-  expect(errors[1]).toContain('PDF could not be opened');
+  expect(errors[1]).toContain('HTTP 404');
 });

@@ -1,5 +1,15 @@
 # Folio3D verification
 
+## Unreleased: loading, recovery and constrained-device rendering
+
+Closing a PDF during Blob conversion now rejects initialization promptly without waiting for the conversion to finish. A failed initial raster emits one error event. Both regressions were reproduced before the fixes. Remote-load cancellation, late document replacement, worker cleanup and repeated mount/destroy remain covered.
+
+PDF loading reports byte progress through `loadprogress` and an accessible progress bar. The homepage can retry the same source without a page reload and preserves mute across document changes. Error messages distinguish invalid files, missing URLs and server failures, and wrap at 320px. Constrained-device defaults and their quality tradeoffs are documented in [PERFORMANCE.md](PERFORMANCE.md).
+
+Cloud checks passed with system Chromium: 24 unit tests; library/demo builds and strict type checking; 28 distinct loading/provider/performance checks; 24 desktop/mobile demo checks; and 10 packed-package checks including declaration compilation. The wider reader/navigation/controls/sound rerun passed 91 checks with one desktop-only skip of a touch case. An initial desktop drag-cancellation check timed out while other suites were running; it passed repeated traced checks and the complete rerun without a drag-code change. Its intermittent timeout remains recorded rather than claimed fixed. Two diagnostic runs also collided in their shared output directory; separate output directories resolved that test-harness issue.
+
+Firefox, WebKit, physical-device frame rates and a hosted CI run of these changes have not been verified in this cloud session.
+
 ## GitHub Actions status — reviewed 2026-10-25
 
 The latest `main` check at `fc91d570c68fc12e1534d8db2d6e635785def23e` passed: [Verify Folio3D #14](https://github.com/sujaysreedhar/folio3D/actions/runs/39390807758). The later diagnostic-branch check [#15](https://github.com/sujaysreedhar/folio3D/actions/runs/39390825783) also passed. Earlier red runs describe historical browser/runtime and packed-consumer failures, rather than a current library compilation failure. The detailed diagnosis and fixes are recorded below.

@@ -2,6 +2,69 @@ import { test, expect } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { cpus, platform, release, totalmem } from 'node:os';
 
+test.describe('constrained device rendering', () => {
+  test.use({ deviceScaleFactor: 3 });
+  test('caps GPU pixel allocation and honors an explicit quality override', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'deviceMemory', { configurable: true, value: 2 });
+      Object.defineProperty(navigator, 'hardwareConcurrency', { configurable: true, value: 4 });
+    });
+    await page.goto('/reader-probe.html');
+    const results = await page.evaluate(async () => {
+      const r = (window as any).reader;
+      const mount = document.querySelector<HTMLElement>('#one')!;
+      mount.style.width = '320px';
+      const results = [];
+      for (const options of [{}, { maxPixelRatio: 2, memoryBudgetMB: 48 }]) {
+        const b = r.createFlipbook(mount, { source: r.images, renderer: 'webgl', ...options });
+        await b.ready;
+        results.push({
+          ratio: b.renderer.element.width / b.ui.stage.clientWidth,
+          budget: b.performance.memoryBudgetMB,
+          bytes: b.scheduler.stats().bytes + b.scheduler.stats().reservedBytes,
+        });
+        b.destroy();
+      }
+      return results;
+    });
+    expect(results[0]!.ratio).toBeCloseTo(1.5, 2);
+    expect(results[0]!.budget).toBe(32);
+    expect(results[0]!.bytes).toBeLessThanOrEqual(32 * 1024 * 1024);
+    expect(results[1]!.ratio).toBeCloseTo(2, 2);
+    expect(results[1]!.budget).toBe(48);
+  });
+});
+
+test('data-saving skips speculative downloads while page navigation still works', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'connection', {
+      configurable: true,
+      value: { saveData: true },
+    });
+  });
+  const pages: string[] = [];
+  page.on('request', (request) => {
+    if (/samples\/page-\d\.svg$/.test(request.url())) pages.push(request.url().split('/').at(-1)!);
+  });
+  await page.goto('/reader-probe.html');
+  await page.evaluate(async () => {
+    const r = (window as any).reader;
+    const b = r.createFlipbook(document.querySelector('#one'), {
+      source: r.images,
+      renderer: 'flat',
+      pageMode: 'single',
+    });
+    (window as any).book = b;
+    await b.ready;
+  });
+  expect([...new Set(pages)]).toEqual(['page-1.svg']);
+  await page.getByRole('button', { name: 'Next page', exact: true }).click();
+  await expect(page.getByRole('spinbutton', { name: 'Page number' })).toHaveValue('2');
+  expect([...new Set(pages)]).toEqual(['page-1.svg', 'page-2.svg']);
+});
+
 test('fitted and immediate turns skip redundant transform and animation draws', async ({
   page,
 }) => {

@@ -1,4 +1,4 @@
-import type { FlipbookState, Source } from './types';
+import type { FlipbookState, Source, LoadProgress } from './types';
 import { applyTheme } from './themes';
 export type Action =
   'previous' | 'next' | 'zoomIn' | 'zoomOut' | 'fit' | 'fullscreen' | 'sound' | 'bookmark';
@@ -282,6 +282,21 @@ export class ReaderUI {
     this.message.textContent = text;
     this.message.hidden = !text;
     this.message.setAttribute('role', error ? 'alert' : 'status');
+  }
+  progress({ loaded, total }: LoadProgress): void {
+    const percent =
+      total === undefined ? undefined : Math.min(100, Math.floor((loaded / total) * 100));
+    const text =
+      percent === undefined
+        ? `Loading PDF… ${Math.round(loaded / 1024)} KB downloaded`
+        : `Loading PDF… ${percent}%`;
+    if (this.message.textContent === text) return;
+    this.status(text);
+    const meter = document.createElement('progress');
+    meter.max = 100;
+    if (percent !== undefined) meter.value = percent;
+    meter.setAttribute('aria-label', 'PDF download progress');
+    this.message.append(meter);
   }
   dispose(): void {
     if (this.objectUrl) URL.revokeObjectURL(this.objectUrl);

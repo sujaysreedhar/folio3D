@@ -22,9 +22,12 @@ const pdf: Source = { type: 'pdf', data: new URL('samples/magazine.pdf', base).h
 const mount = document.querySelector<HTMLElement>('#book')!,
   status = document.querySelector<HTMLElement>('#publication-status')!;
 const lightbox = document.querySelector<HTMLButtonElement>('#lightbox')!;
+const retry = document.querySelector<HTMLButtonElement>('#retry-publication')!;
 let book: Flipbook | undefined,
+  modal: Flipbook | undefined,
   currentSource: Source = images,
-  currentTitle = 'Image book';
+  currentTitle = 'Image book',
+  currentInitialPage = 1;
 let theme: Theme = 'modern';
 let themeOverrides: Partial<ThemeTokens> = {};
 const customPalette: ThemeTokens = {
@@ -59,9 +62,14 @@ function navigationOptions(source: Source) {
   };
 }
 async function show(source: Source, title: string, initialPage = 1) {
+  const sound = book?.getState().sound ?? true;
+  modal?.destroy();
+  modal = undefined;
   book?.destroy();
   currentSource = source;
   currentTitle = title;
+  currentInitialPage = initialPage;
+  retry.hidden = true;
   mount.setAttribute('aria-busy', 'true');
   lightbox.disabled = true;
   document.querySelector('#images')!.setAttribute('aria-pressed', String(source === images));
@@ -72,7 +80,7 @@ async function show(source: Source, title: string, initialPage = 1) {
     initialPage,
     assetBaseUrl: assets,
     label: title,
-    sound: true,
+    sound,
     ...navigationOptions(source),
   });
   book = next;
@@ -83,15 +91,21 @@ async function show(source: Source, title: string, initialPage = 1) {
     status.textContent = `${title} · ${state.pageCount} pages`;
     lightbox.disabled = false;
   } catch (e) {
-    if (book === next)
+    if (book === next) {
+      retry.hidden = (e as Error).name === 'AbortError';
       status.textContent =
         (e as Error).name === 'AbortError'
           ? 'Book closed.'
-          : 'Unable to open this publication. Try a sample or choose another PDF.';
+          : 'Unable to open this publication. Retry or choose another PDF.';
+    }
   } finally {
     if (book === next) mount.setAttribute('aria-busy', 'false');
   }
 }
+retry.addEventListener('click', () => {
+  void show(currentSource, currentTitle, currentInitialPage);
+  mount.querySelector<HTMLElement>('.folio3d')?.focus();
+});
 document
   .querySelector('#images')!
   .addEventListener('click', () => void show(images, 'Image book', 2));
@@ -104,7 +118,8 @@ document.querySelector<HTMLInputElement>('#file')!.addEventListener('change', (e
 });
 lightbox.addEventListener('click', () => {
   lightbox.focus();
-  const modal = openFlipbook({
+  modal?.destroy();
+  modal = openFlipbook({
     source: currentSource,
     label: currentTitle,
     assetBaseUrl: assets,
@@ -142,6 +157,9 @@ copyExample('#copy', '#snippet', 'Copy code');
 copyExample('#copy-css', '#css-snippet', 'Copy CSS');
 updateSnippet();
 window.addEventListener('pagehide', (event) => {
-  if (!event.persisted) book?.destroy();
+  if (!event.persisted) {
+    modal?.destroy();
+    book?.destroy();
+  }
 });
 void show(images, 'Image book', 2);

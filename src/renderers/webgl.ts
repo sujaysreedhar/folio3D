@@ -64,14 +64,14 @@ export class WebGLBookRenderer implements BookRenderer {
   private uvDirection?: 1 | -1;
   private readonly cameraLift = 6 * Math.tan(0.14);
 
-  constructor(onContextLost: () => void) {
+  constructor(onContextLost: () => void, pixelRatio = Math.min(devicePixelRatio || 1, 2)) {
     this.gl = new WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' });
     this.element = this.gl.domElement;
     this.element.className = 'folio3d-canvas';
     this.element.setAttribute('aria-hidden', 'true');
     this.element.addEventListener('webglcontextlost', this.lost);
     this.onLost = onContextLost;
-    this.gl.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    this.gl.setPixelRatio(pixelRatio);
     this.gl.shadowMap.enabled = true;
     this.gl.shadowMap.type = PCFShadowMap;
     // A slight fixed viewing angle exposes the sheet's curved top/bottom edges.
