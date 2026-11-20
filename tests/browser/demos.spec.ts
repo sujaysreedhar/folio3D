@@ -118,6 +118,7 @@ test('catalog shortcuts follow the reader and lightbox keeps the current page', 
   await page.goto('/demos/catalog.html');
   const book = page.getByRole('region', { name: 'Form & Field catalog' });
   await expect(book).toHaveAttribute('data-status', 'ready');
+  await expect(book).toHaveAttribute('data-theme', 'atelier');
   await page.getByRole('button', { name: 'Lighting', exact: true }).click();
   await expect(book.getByRole('spinbutton', { name: 'Page number' })).toHaveValue('4');
   await expect(page.getByRole('button', { name: 'Lighting', exact: true })).toHaveAttribute(
@@ -184,6 +185,7 @@ test('reading room opens each publication and restores focus on close', async ({
     await opener.click();
     const dialog = page.getByRole('dialog', { name: title });
     await expect(dialog.locator('.folio3d')).toHaveAttribute('data-status', 'ready');
+    await expect(dialog).toHaveAttribute('data-theme', 'atelier');
     await dialog.getByRole('button', { name: 'Next page', exact: true }).click();
     await expect(dialog.getByRole('spinbutton', { name: 'Page number' })).toHaveValue('2');
     if (title === 'Fieldnotes magazine') {

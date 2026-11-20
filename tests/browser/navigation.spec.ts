@@ -74,7 +74,7 @@ test('themes switch independently and expose state and events', async ({ page })
     b.setTheme('midnight');
     return { theme: b.getState().theme, other: other.getState().theme, events };
   });
-  expect(result).toEqual({ theme: 'midnight', other: 'classic', events: ['midnight'] });
+  expect(result).toEqual({ theme: 'midnight', other: 'atelier', events: ['midnight'] });
   await expect(page.locator('#one .folio3d')).toHaveAttribute('data-theme', 'midnight');
 });
 

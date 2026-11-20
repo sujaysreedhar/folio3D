@@ -17,6 +17,14 @@ for (const path of ['/nested/', '/nested/minified.html', '/npm/'])
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(path);
     await expect(page.locator('.folio3d')).toHaveAttribute('data-status', 'ready');
+    await expect(page.locator('.folio3d')).toHaveAttribute('data-theme', 'atelier');
+    const textureWidth = await page.locator('.folio3d-stage').evaluate(async (stage) => {
+      const image = new Image();
+      image.src = getComputedStyle(stage).backgroundImage.match(/^url\("(.*)"\)$/)![1]!;
+      await image.decode();
+      return image.naturalWidth;
+    });
+    expect(textureWidth).toBeGreaterThan(0);
     await expect(page.getByRole('spinbutton', { name: 'Page number' })).toHaveValue('1');
     await page.getByRole('button', { name: 'Next page', exact: true }).click();
     await expect(page.getByRole('spinbutton', { name: 'Page number' })).toHaveValue('2');
@@ -97,6 +105,7 @@ test('theme selector updates the production reader and lightbox', async ({ page 
   await page.goto('/showcase/');
   await expect(page.locator('.folio3d')).toHaveAttribute('data-status', 'ready');
   for (const theme of [
+    'atelier',
     'classic',
     'modern',
     'sepia',

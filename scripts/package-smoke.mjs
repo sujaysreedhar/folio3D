@@ -38,7 +38,7 @@ await writeFile(
   `import { createFlipbook, type FlipbookOptions } from 'folio3d';
 import { createFlipbook as createMinified } from 'folio3d/min';
 const minifiedFactory: typeof createFlipbook = createMinified;
-const options: FlipbookOptions = { source: { type: 'images', pages: [{ src: '/one.svg' }] }, sound: true, maxPixelRatio: 1.5, memoryBudgetMB: 32, theme: 'modern', contents: [{ title: 'Start', page: 1 }], storageKey: 'types-test' };
+const options: FlipbookOptions = { source: { type: 'images', pages: [{ src: '/one.svg' }] }, sound: true, maxPixelRatio: 1.5, memoryBudgetMB: 32, theme: 'atelier', contents: [{ title: 'Start', page: 1 }], storageKey: 'types-test' };
 const book = createFlipbook(document.createElement('div'), options);
 book.on('pagechange', state => { const page: number = state.page; console.log(page); });
 book.on('soundchange', state => { const sound: boolean = state.sound; console.log(sound); });
@@ -74,11 +74,11 @@ await cp(dist, resolve(site, 'nested/lib'), { recursive: true });
 await cp('tests/fixtures/magazine.pdf', resolve(site, 'nested/catalog.pdf'));
 await writeFile(
   resolve(site, 'nested/minified.html'),
-  `<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>Minified module consumer</title><link rel="stylesheet" href="./lib/folio3d.min.css"></head><body><div id="book" style="height:650px"></div><script type="module">import{createFlipbook}from'./lib/folio3d.min.js';window.book=createFlipbook(document.querySelector('#book'),{source:{type:'pdf',data:'./catalog.pdf'},renderer:new URLSearchParams(location.search).has('webgl')?'webgl':'flat',theme:'modern'});window.book.ready.catch(()=>{});</script></body></html>`,
+  `<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>Minified module consumer</title><link rel="stylesheet" href="./lib/folio3d.min.css"></head><body><div id="book" style="height:650px"></div><script type="module">import{createFlipbook}from'./lib/folio3d.min.js';window.book=createFlipbook(document.querySelector('#book'),{source:{type:'pdf',data:'./catalog.pdf'},renderer:new URLSearchParams(location.search).has('webgl')?'webgl':'flat'});window.book.ready.catch(()=>{});</script></body></html>`,
 );
 await writeFile(
   resolve(site, 'nested/index.html'),
-  `<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>Plain module consumer</title><link rel="stylesheet" href="./lib/folio3d.css"></head><body><div id="book" style="width:900px;height:650px"></div><script type="module">import{createFlipbook}from'./lib/folio3d.js';window.book=createFlipbook(document.querySelector('#book'),{source:{type:'pdf',data:'./catalog.pdf'},renderer:'flat',theme:'modern',storageKey:'package-smoke'});window.book.ready.catch(()=>{});</script></body></html>`,
+  `<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>Plain module consumer</title><link rel="stylesheet" href="./lib/folio3d.css"></head><body><div id="book" style="width:900px;height:650px"></div><script type="module">import{createFlipbook}from'./lib/folio3d.js';window.book=createFlipbook(document.querySelector('#book'),{source:{type:'pdf',data:'./catalog.pdf'},renderer:'flat',storageKey:'package-smoke'});window.book.ready.catch(()=>{});</script></body></html>`,
 );
 await cp(resolve(dist, 'assets'), resolve(consumer, 'public/assets'), { recursive: true });
 await cp('tests/fixtures/magazine.pdf', resolve(consumer, 'public/catalog.pdf'));

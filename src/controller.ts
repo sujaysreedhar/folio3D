@@ -19,7 +19,7 @@ import { PageTurnSound } from './sound';
 import { renderPolicy } from './performance';
 import { Bookmarks } from './bookmarks';
 import { ReaderNavigation } from './navigation';
-import { applyTheme, normalizeThemeOverrides, validateTheme } from './themes';
+import { applyTheme, defaultTheme, normalizeThemeOverrides, validateTheme } from './themes';
 
 interface Gesture {
   id: number;
@@ -121,7 +121,7 @@ export class FlipbookController implements Flipbook {
       visiblePages: [],
       zoom: 1,
       sound: options.sound ?? false,
-      theme: options.theme ?? 'classic',
+      theme: options.theme ?? defaultTheme,
       themeOverrides,
       pageMode: resolveMode(options.pageMode ?? 'auto', container.clientWidth),
       renderer: 'flat',

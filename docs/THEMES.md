@@ -1,16 +1,17 @@
 # Reader themes
 
-The Modern design direction uses an editorial serif, a restrained violet accent, and a shared spacing rhythm. Eight built-in themes apply to every reader control and navigation panel; the source pages keep their original colors.
+Inline readers and lightboxes open in Atelier by default. Its ivory controls and brass accents frame the pages on a deep teal marbled paper backdrop. All nine themes preserve the publication’s original page colors.
 
 ```ts
-const book = createFlipbook(element, { source, theme: 'modern' });
+const book = createFlipbook(element, { source });
 book.setTheme('midnight');
 book.on('themechange', (state) => console.log(state.theme));
 ```
 
 | Theme             | Surface   | Text      | Accent    | Typography                       |
 | ----------------- | --------- | --------- | --------- | -------------------------------- |
-| Classic (default) | `#f9f7f1` | `#243c35` | `#9c3526` | System sans                      |
+| Atelier (default) | `#faf5e9` | `#173737` | `#89662f` | Georgia                          |
+| Classic           | `#f9f7f1` | `#243c35` | `#9c3526` | System sans                      |
 | Modern            | `#faf8fd` | `#231c30` | `#553f83` | IBM Plex Serif, Georgia fallback |
 | Sepia             | `#f7eedc` | `#433125` | `#884326` | Georgia                          |
 | Midnight          | `#25212e` | `#f1ecfa` | `#d4b6ff` | System sans                      |
@@ -19,7 +20,7 @@ book.on('themechange', (state) => console.log(state.theme));
 | Slate             | `#252b33` | `#f0f3f6` | `#9bcaff` | System sans                      |
 | High Contrast     | `#000000` | `#ffffff` | `#ffe45c` | System sans                      |
 
-No fonts are downloaded by the library. Hosts may self-host IBM Plex Serif; otherwise Modern uses Georgia. Reader body text is 14px, helper text 12px, and navigation headings 16px. Spacing uses 4/8/12/16/24/32px steps. Controls have distinct hover, pressed, current-page, disabled and focus-visible states; navigation controls are at least 40px high.
+No fonts are downloaded by the library. Hosts may self-host IBM Plex Serif; otherwise Modern uses Georgia. Reader body text is 14px and helper text is 12px. Navigation headings are 18px in Atelier and 16px in the other presets. Spacing uses 4/8/12/16/24/32px steps. Controls have distinct hover, pressed, current-page, disabled and focus-visible states; navigation controls are at least 40px high.
 
 ## Customize tokens
 
@@ -36,7 +37,9 @@ book.setThemeOverrides({}); // Restores scoped CSS and the selected preset.
 
 Available tokens are `ink`, `paper`, `stage`, `muted`, `border`, `hover`, `accent`, and `font`. Values must be valid CSS colors or a CSS font-family for `font`. Unknown names and invalid values throw before changing appearance. Caller maps and `getState().themeOverrides` are copied. Preset/override changes emit `themechange` only when configuration changes, preserve the selected page, and do not rasterize document pages again.
 
-Precedence is built-in preset, then host CSS, then JavaScript overrides. Clearing JavaScript overrides reveals host CSS again. Customization is per instance, with no storage or network requests added. Check your custom palette's contrast against both paper and stage surfaces.
+Precedence is built-in preset, then host CSS, then JavaScript overrides. Clearing JavaScript overrides reveals host CSS again. Set `stage` or the scoped CSS property `--folio-stage` to use a solid backdrop in Atelier. The generated marbled paper is bundled with Folio3D. Check your custom palette's contrast against both paper and stage surfaces.
+
+When self-hosting the built library, keep `atelier-marble.webp` beside the stylesheet. If your site sets an `img-src` content security policy, allow the origin serving that image.
 
 Use scoped CSS after the distributed stylesheet. Keep matching tokens on a custom lightbox wrapper when customizing its header too.
 
@@ -53,7 +56,7 @@ Use scoped CSS after the distributed stylesheet. Keep matching tokens on a custo
 }
 ```
 
-Choose a built-in theme using `theme` or `setTheme`, then override tokens for a brand variant. Existing integrations default to Classic. Do not recolor document canvases, replace focus outlines with color alone, or use global `button` rules to theme a reader.
+Choose a built-in theme using `theme` or `setTheme`, then override tokens for a brand variant. When upgrading from 0.3.0, set `theme: 'classic'` to keep the previous default. Use scoped selectors for controls and retain visible keyboard focus outlines.
 
 ## Accessibility and review checks
 

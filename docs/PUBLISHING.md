@@ -30,7 +30,7 @@ Preserve `demos/`, `samples/`, `assets/`, `lib/`, and license notices. Relative 
 
 The live demo uses GitHub Pages, publishing the root of the `docs` branch at `folio3d.sujaysreedhar.com`. After verification, commit the contents of `demo-dist/` to that branch and push it. Preserve `.nojekyll` and `CNAME`; matching files are included in `demo/public/` so production builds retain them. The `docs` deployment branch is separate from the `docs/` source-documentation directory on `main`. Publishing a GitHub release alone does not update Pages.
 
-Confirm Settings → Pages selects `docs` and `/ (root)`. Wait for the Pages deployment, then verify the live version meta tag, all eight presets, the custom palette/lightbox, a PDF and each example route. Keep the previous deployment commit so a failed hosted check can be rolled back with a revert commit.
+Confirm Settings → Pages selects `docs` and `/ (root)`. Wait for the Pages deployment, then verify the live version meta tag, each theme preset, the custom palette/lightbox, a PDF and each example route. Keep the previous deployment commit so a failed hosted check can be rolled back with a revert commit.
 
 ## Cut the next release
 

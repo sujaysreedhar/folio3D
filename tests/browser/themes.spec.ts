@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 const themes = [
+  'atelier',
   'classic',
   'modern',
   'sepia',
@@ -10,6 +11,49 @@ const themes = [
   'slate',
   'high-contrast',
 ];
+
+test('Atelier gives inline readers and lightboxes a textured stage and respects solid backgrounds', async ({
+  page,
+}) => {
+  await page.goto('/reader-probe.html');
+  const result = await page.evaluate(async () => {
+    const r = (window as any).reader;
+    const options = { source: r.images, renderer: 'flat' };
+    const book = r.createFlipbook(document.querySelector('#one'), options);
+    const modal = r.openFlipbook(options);
+    await Promise.all([book.ready, modal.ready]);
+    const dialog = document.querySelector('dialog')!;
+    const root = document.querySelector<HTMLElement>('#one .folio3d')!;
+    const stage = root.querySelector('.folio3d-stage')!;
+    const image = () => getComputedStyle(stage).backgroundImage;
+    const artwork = image();
+    const defaults = [book.getState().theme, modal.getState().theme, dialog.dataset.theme];
+    const modalArt = getComputedStyle(dialog.querySelector('.folio3d-stage')!).backgroundImage;
+    const host = document.createElement('style');
+    host.textContent = '.folio3d { --folio-stage: #bbbbbb; }';
+    document.head.append(host);
+    const hostArt = image();
+    book.setThemeOverrides({ stage: '#123456' });
+    const override = [image(), getComputedStyle(stage).backgroundColor];
+    book.setThemeOverrides({});
+    const restored = getComputedStyle(stage).backgroundColor;
+    host.remove();
+    const restoredArt = image();
+    book.setTheme('classic');
+    const classic = image();
+    modal.destroy();
+    book.destroy();
+    return { defaults, artwork, modalArt, hostArt, override, restored, restoredArt, classic };
+  });
+  expect(result.defaults).toEqual(['atelier', 'atelier', 'atelier']);
+  expect(result.artwork).toContain('atelier-marble.webp');
+  expect(result.modalArt).toBe(result.artwork);
+  expect(result.hostArt).toBe('none');
+  expect(result.override).toEqual(['none', 'rgb(18, 52, 86)']);
+  expect(result.restored).toBe('rgb(187, 187, 187)');
+  expect(result.restoredArt).toBe(result.artwork);
+  expect(result.classic).toBe('none');
+});
 
 test('lightbox font overrides style the header as well as reader controls', async ({ page }) => {
   await page.goto('/reader-probe.html');
@@ -76,15 +120,16 @@ test('host inline CSS survives state updates and is restored after JavaScript ov
   });
 });
 
-test('demo exposes eight presets, updates embed examples and carries custom colors into lightboxes', async ({
+test('demo starts in Atelier, updates embed examples and carries custom colors into lightboxes', async ({
   page,
 }) => {
   await page.goto('/');
   await expect(page.locator('#book .folio3d')).toHaveAttribute('data-status', 'ready');
   const picker = page.getByRole('combobox', { name: 'Theme', exact: true });
-  await expect(picker.locator('option')).toHaveCount(8);
+  await expect(picker).toHaveValue('atelier');
+  await expect(picker.locator('option')).toHaveCount(themes.length);
   const currentPage = await page.locator('#book input').inputValue();
-  for (const theme of themes.slice(4)) {
+  for (const theme of themes) {
     await picker.selectOption(theme);
     await expect(page.locator('#book .folio3d')).toHaveAttribute('data-theme', theme);
     await expect(page.locator('#snippet')).toContainText(`theme: '${theme}'`);
@@ -173,7 +218,7 @@ test('all presets and custom overrides preserve pages and isolate readers and li
   });
   expect(result.replaced).toEqual({ accent: '#123456' });
   expect(result.cleared).toEqual({});
-  expect(result.eventCount).toBe(9);
+  expect(result.eventCount).toBe(themes.length - 1 + 2);
   expect(result.modalInitial).toBe('#f1fafb');
   expect(result.modalChanged).toBe('#f5fff2');
   expect(result.pdfThemes).toEqual(themes);
@@ -212,7 +257,7 @@ test('preset text and focus tokens meet contrast targets and host CSS survives o
         muted: ratio(token('muted'), token('paper')),
         focus: Math.min(
           ratio(token('accent'), token('paper')),
-          ratio(token('accent'), token('stage')),
+          ratio(token('accent'), token('stage').trim() || token('atelier-ground')),
         ),
       };
     });

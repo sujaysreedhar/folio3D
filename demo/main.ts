@@ -28,7 +28,8 @@ let book: Flipbook | undefined,
   currentSource: Source = images,
   currentTitle = 'Image book',
   currentInitialPage = 1;
-let theme: Theme = 'modern';
+const themePicker = document.querySelector<HTMLSelectElement>('#reader-theme')!;
+let theme = themePicker.value as Theme;
 let themeOverrides: Partial<ThemeTokens> = {};
 const customPalette: ThemeTokens = {
   ink: '#173b4a',
@@ -129,8 +130,8 @@ lightbox.addEventListener('click', () => {
   });
   void modal.ready.catch(() => {});
 });
-document.querySelector<HTMLSelectElement>('#reader-theme')!.addEventListener('change', (event) => {
-  theme = (event.target as HTMLSelectElement).value as Theme;
+themePicker.addEventListener('change', () => {
+  theme = themePicker.value as Theme;
   book?.setTheme(theme);
   updateSnippet();
 });

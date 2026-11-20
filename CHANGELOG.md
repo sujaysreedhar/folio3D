@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+Atelier is the new default for inline readers and lightboxes. It pairs an ivory toolbar with a petrol-teal marbled paper backdrop. Select `theme: 'classic'` to keep the previous default.
+
 ## 0.3.0 — 2026-10-19
 
 Added Ocean, Forest, Slate and High Contrast presets, typed `ThemeTokens`, `themeOverrides`, and `setThemeOverrides()`. Overrides apply to readers and lightbox headers, survive preset switches and appear as copied state in theme events. The demo includes all eight presets, a custom palette and copyable JavaScript/CSS examples.

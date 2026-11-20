@@ -12,7 +12,7 @@ Turn PDFs and images into interactive 3D flipbooks for catalogs, magazines, port
 - Inline viewers and modal lightboxes, with keyboard and pointer navigation.
 - Optional page-turn sound with a mute control in the reader toolbar.
 - Page thumbnails, nested PDF/custom contents, and bookmarks with optional browser persistence.
-- Eight themes: Classic, Modern, Sepia, Midnight, Ocean, Forest, Slate and High Contrast. Switch themes or apply custom colors/fonts without reopening the book.
+- Readers open in Atelier, with a marbled paper backdrop and ivory controls. Switch among nine presets or apply custom colors and fonts while reading.
 - Browser-only document processing. Local files stay on your device; no backend, account or upload is required.
 - Plain HTML and npm/bundler integration, with self-hosted PDF workers and support assets.
 
@@ -184,7 +184,7 @@ Caller-owned byte arrays are copied before PDF.js receives them. URLs follow nor
 | `duration`       | `600`                  | Full page-turn duration in milliseconds; zero is immediate                                |
 | `sound`          | `false`                | Enable the recorded page-turn sound after a user interaction                              |
 | `label`          | `Interactive flipbook` | Accessible region/dialog name                                                             |
-| `theme`          | `classic`              | `classic`, `modern`, `sepia`, `midnight`, `ocean`, `forest`, `slate`, `high-contrast`     |
+| `theme`          | `atelier`              | `atelier`, `classic`, `modern`, `sepia`, `midnight`, `ocean`, `forest`, `slate`, `high-contrast` |
 | `themeOverrides` | `{}`                   | Partial `ThemeTokens`: ink, paper, stage, muted, border, hover, accent, font              |
 | `contents`       | PDF outline or empty   | Nested `{ title, page?, children? }` entries; overrides PDF contents                      |
 | `storageKey`     | unset                  | Unique document/version key for persistent local bookmarks; unset keeps them per instance |
@@ -199,7 +199,7 @@ Sound uses the bundled `assets/page-turn.wav` recording through Web Audio. Set `
 - `next()`, `previous()`, `goToPage(page)` navigate. Await `ready` before page-range-dependent operations. Calls during initialization wait; during a turn, the latest pending target wins. Boundaries do nothing; invalid pages throw `RangeError` after count is known. Direct nonadjacent jumps are immediate after loading.
 - `setZoom(scale)`, `resetZoom()` change the view. Turns reset zoom; zoom requested during a turn applies after settlement. Dragging pans while zoomed; dragging a page turns it at fit. Short drags reverse; edge taps also navigate.
 - `setSound(enabled)` enables or mutes the page-turn sound. The toolbar also provides a sound toggle; browser audio permissions require a user interaction before playback.
-- `setTheme(theme)` switches the reader and lightbox appearance. Additional preset IDs are `ocean`, `forest`, `slate`, and `high-contrast`. Custom overrides persist when switching presets. Theme colors do not recolor document pages; see [theme tokens](docs/THEMES.md).
+- `setTheme(theme)` switches the reader and lightbox appearance. Use `classic` for the previous default. Custom overrides persist across theme changes. See [theme tokens](docs/THEMES.md).
 - `setThemeOverrides(overrides)` replaces the custom token map; `{}` restores host CSS and the current preset. The same tokens apply to the lightbox header. Unknown tokens and invalid CSS values throw before changing the current theme.
 - `getContents()` resolves nested contents after `ready`. PDF named and explicit internal destinations are resolved to one-based pages; external or invalid destinations remain labels. Contents trees are limited to 33 levels. A failed contents lookup can be retried.
 - `getBookmarks()` returns a sorted copy. `toggleBookmark(page?)` adds/removes a page (defaults to current); await `ready` first. Active same-key readers synchronize, and other tabs receive browser storage events. Storage failure falls back to session state. Persistence is origin-local, never an upload or cross-device sync. Use a new key when changing a document's page ordering; local demo file uploads use session bookmarks.

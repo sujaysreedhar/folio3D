@@ -1,6 +1,8 @@
 import type { Theme, ThemeTokens } from './types';
 
+export const defaultTheme: Theme = 'atelier';
 export const themeNames: readonly Theme[] = [
+  defaultTheme,
   'classic',
   'modern',
   'sepia',

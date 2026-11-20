@@ -10,7 +10,7 @@
   justify-self: end;
   font-size: 15px;
   line-height: 1.8;
-  color: #536257;
+  color: var(--site-muted);
   margin: 0 0 5px;
 }
 .demo-layout {
@@ -38,7 +38,7 @@
 .section-buttons button {
   text-align: left;
   padding: 12px 14px;
-  color: #536257;
+  color: var(--site-muted);
   border: 1px solid transparent;
   border-radius: 3px;
   background: transparent;
@@ -46,12 +46,12 @@
   line-height: 1.4;
 }
 .section-buttons button:hover {
-  background: #e8e8df;
+  background: var(--site-surface);
 }
 .section-buttons button[aria-pressed='true'] {
   color: #fff9ef;
-  background: #294638;
-  border-color: #294638;
+  background: var(--site-ink);
+  border-color: var(--site-ink);
 }
 .section-buttons button:disabled {
   cursor: wait;
@@ -64,18 +64,18 @@
   min-height: 70px;
 }
 .sample-note {
-  border-top: 1px solid #243d3422;
+  border-top: 1px solid #17373722;
   padding-top: 18px;
   font-size: 11px;
   line-height: 1.8;
-  color: #647165;
+  color: var(--site-muted);
 }
 .reader-panel {
   min-width: 0;
-  border: 1px solid #243d3422;
+  border: 1px solid #17373722;
   border-radius: 5px;
   overflow: hidden;
-  background: #e7e4dc;
+  background: var(--site-surface);
 }
 .reader-heading {
   display: flex;
@@ -84,19 +84,19 @@
   gap: 12px;
   padding: 13px 18px;
   font-size: 12px;
-  background: #efede5;
+  background: var(--site-surface);
 }
 .outline-button {
   padding: 9px 13px;
   font-size: 12px;
-  border: 1px solid #243d3440;
-  color: #243d34;
+  border: 1px solid #17373740;
+  color: var(--site-ink);
   background: transparent;
   border-radius: 3px;
   white-space: nowrap;
 }
 .outline-button:hover {
-  background: #243d3409;
+  background: #17373709;
 }
 .outline-button:disabled {
   cursor: wait;
@@ -105,23 +105,17 @@
 .demo-book {
   height: clamp(460px, 64vh, 720px);
 }
-.demo-book .folio3d {
-  background: #e7e4dc;
-}
-.demo-book .folio3d-toolbar {
-  background: #efede5;
-}
 .reader-hint {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   padding: 15px 18px;
-  border-top: 1px solid #243d3422;
+  border-top: 1px solid #17373722;
   font-size: 11px;
   line-height: 1.6;
-  background: #f6f5ef;
-  color: #5a675b;
+  background: var(--site-paper);
+  color: var(--site-muted);
 }
 .demo-next {
   padding-block: 32px 52px;
@@ -129,17 +123,10 @@
   justify-content: space-between;
   align-items: center;
   font-size: 12px;
-  color: #5a675b;
+  color: var(--site-muted);
 }
 .demo-next .text-link {
   margin: 0;
-}
-.portfolio-demo {
-  background: #f0f2eb;
-}
-.portfolio-demo .reader-panel,
-.portfolio-demo .demo-book .folio3d {
-  background: #dfe4da;
 }
 .shelf-grid {
   display: grid;
@@ -167,8 +154,8 @@
   height: auto;
   box-shadow:
     4px 7px 0 #fff9ef,
-    5px 8px 0 #243d3422,
-    10px 16px 24px #243d3420;
+    5px 8px 0 #17373722,
+    10px 16px 24px #17373720;
 }
 .magazine-cover {
   background: #e5ddce;
@@ -191,7 +178,7 @@
 .shelf-item > p:not(.eyebrow) {
   font-size: 13px;
   line-height: 1.8;
-  color: #536257;
+  color: var(--site-muted);
   margin: 0 0 24px;
   flex: 1;
 }
@@ -201,21 +188,21 @@
   width: 100%;
   padding: 14px 0;
   border: 0;
-  border-block: 1px solid #243d3430;
+  border-block: 1px solid #17373730;
   background: transparent;
-  color: #243d34;
+  color: var(--site-ink);
   font-size: 13px;
 }
 .read-button:hover {
-  color: #a5412d;
-  border-color: #a5412d;
+  color: var(--site-brass);
+  border-color: var(--site-brass);
 }
 .bring-your-book {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 60px;
   align-items: center;
-  border-top: 1px solid #243d3422;
+  border-top: 1px solid #17373722;
   padding-block: 42px 60px;
 }
 .bring-your-book h2 {
@@ -225,7 +212,7 @@
 .bring-your-book p:not(.eyebrow) {
   font-size: 13px;
   line-height: 1.8;
-  color: #536257;
+  color: var(--site-muted);
   max-width: 370px;
   margin-bottom: 0;
 }
@@ -241,11 +228,11 @@
   width: 100%;
   max-width: 100%;
   font-size: 12px;
-  color: #536257;
+  color: var(--site-muted);
 }
 .file-picker input::file-selector-button {
   border: 0;
-  background: #294638;
+  background: var(--site-ink);
   color: #fff9ef;
   padding: 12px 16px;
   margin-right: 12px;
@@ -253,7 +240,7 @@
   cursor: pointer;
 }
 .file-picker input:focus-visible {
-  outline: 2px solid #bd452d;
+  outline: 2px solid var(--site-brass);
   outline-offset: 5px;
 }
 @media (max-width: 1000px) {
@@ -306,7 +293,7 @@
   .section-buttons button {
     padding: 10px 12px;
     font-size: 12px;
-    border-color: #243d3422;
+    border-color: #17373722;
   }
   .project-note {
     margin: 14px 0 0;

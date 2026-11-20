@@ -40,8 +40,9 @@
             <label class="theme-picker" for="reader-theme"
               >Theme
               <select id="reader-theme">
-                <option value="modern" selected>Modern</option>
+                <option value="atelier" selected>Atelier</option>
                 <option value="classic">Classic</option>
+                <option value="modern">Modern</option>
                 <option value="sepia">Sepia</option>
                 <option value="midnight">Midnight</option>
                 <option value="ocean">Ocean</option>
@@ -155,7 +156,7 @@
 
 const book = createFlipbook(element, {
   source: { type: 'pdf', data: './catalog.pdf' },
-  theme: 'modern',
+  theme: 'atelier',
 });
 
 await book.ready;

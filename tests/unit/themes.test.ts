@@ -1,8 +1,9 @@
 import { expect, it } from 'vitest';
 import { themeNames, normalizeThemeOverrides } from '../../src/themes';
 
-it('offers eight stable preset identifiers', () => {
+it('offers Atelier alongside the original eight presets', () => {
   expect(themeNames).toEqual([
+    'atelier',
     'classic',
     'modern',
     'sepia',

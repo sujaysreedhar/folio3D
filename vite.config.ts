@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 export default defineConfig({
+  base: './',
   build: {
+    assetsDir: '',
     target: 'es2022',
     lib: {
       entry: 'src/bundle.ts',

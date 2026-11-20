@@ -2,7 +2,15 @@ export type PageMode = 'auto' | 'single' | 'double';
 export type ResolvedPageMode = Exclude<PageMode, 'auto'>;
 export type RendererMode = 'auto' | 'webgl' | 'flat';
 export type Theme =
-  'classic' | 'modern' | 'sepia' | 'midnight' | 'ocean' | 'forest' | 'slate' | 'high-contrast';
+  | 'atelier'
+  | 'classic'
+  | 'modern'
+  | 'sepia'
+  | 'midnight'
+  | 'ocean'
+  | 'forest'
+  | 'slate'
+  | 'high-contrast';
 export interface ThemeTokens {
   ink: string;
   paper: string;

@@ -9,6 +9,40 @@
   --folio-accent: #9c3526;
   --folio-font: system-ui, sans-serif;
 }
+.folio3d:where([data-theme='atelier']),
+.folio3d-dialog:where([data-theme='atelier']) {
+  color-scheme: light;
+  --folio-ink: #173737;
+  --folio-paper: #faf5e9;
+  /* The stage uses artwork until a host supplies a solid stage color. */
+  --folio-stage: initial;
+  --folio-atelier-ground: #0e2425;
+  --folio-muted: #53625b;
+  --folio-border: #c9bda4;
+  --folio-hover: #eae3d2;
+  --folio-accent: #89662f;
+  --folio-font: Georgia, 'Times New Roman', serif;
+}
+.folio3d[data-theme='atelier'] > .folio3d-stage {
+  background: var(
+    --folio-stage,
+    var(--folio-atelier-ground) url('./assets/atelier-marble.webp?no-inline') center / cover no-repeat
+  );
+}
+@media (forced-colors: active) {
+  .folio3d[data-theme='atelier'] > .folio3d-stage {
+    background: Canvas;
+  }
+}
+.folio3d[data-theme='atelier'] .folio3d-toolbar {
+  border-top-color: var(--folio-accent);
+}
+.folio3d[data-theme='atelier'] .folio3d-navigation-heading strong {
+  font-size: 18px;
+}
+.folio3d[data-theme='atelier'] .folio3d-thumbnail-placeholder {
+  background: var(--folio-hover);
+}
 .folio3d[data-theme='modern'],
 .folio3d-dialog[data-theme='modern'] {
   --folio-ink: #231c30;
@@ -52,7 +86,7 @@
   overflow: hidden;
   isolation: isolate;
   color: var(--folio-ink);
-  background: var(--folio-stage);
+  background: var(--folio-stage, var(--folio-atelier-ground));
   font: 14px/1.4 var(--folio-font);
   box-sizing: border-box;
   outline-offset: -3px;

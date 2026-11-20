@@ -55,8 +55,10 @@ try {
     await ready(page.locator('#book .folio3d'));
     assert.equal(await page.locator('#book .folio3d').getAttribute('data-renderer'), 'webgl');
     const picker = page.getByRole('combobox', { name: 'Theme', exact: true });
-    assert.equal(await picker.locator('option').count(), 8);
-    for (const theme of [
+    assert.equal(await picker.inputValue(), 'atelier');
+    assert.equal(await page.locator('#book .folio3d').getAttribute('data-theme'), 'atelier');
+    const themes = [
+      'atelier',
       'classic',
       'modern',
       'sepia',
@@ -65,7 +67,9 @@ try {
       'forest',
       'slate',
       'high-contrast',
-    ]) {
+    ];
+    assert.equal(await picker.locator('option').count(), themes.length);
+    for (const theme of themes) {
       await picker.selectOption(theme);
       assert.equal(await page.locator('#book .folio3d').getAttribute('data-theme'), theme);
       assert.ok((await page.locator('#snippet').textContent()).includes(`theme: '${theme}'`));
@@ -111,7 +115,7 @@ try {
     assert.deepEqual(failures, []);
     report.profiles.push({
       profile: mobile ? 'mobile' : 'desktop',
-      themes: 8,
+      themes: themes.length,
       pdf: true,
       lightbox: true,
       thumbnails: true,
