@@ -1,4 +1,4 @@
-import type { FlipbookState, Source } from './types';
+import type { FlipbookState, Source, LoadProgress } from './types';
 export type Action = 'previous' | 'next' | 'zoomIn' | 'zoomOut' | 'fit' | 'fullscreen' | 'sound' | 'bookmark';
 export declare class ReaderUI {
     readonly root: HTMLElement;
@@ -19,5 +19,6 @@ export declare class ReaderUI {
     update(state: FlipbookState): void;
     updateBookmark(saved: boolean): void;
     status(text: string, error?: boolean): void;
+    progress({ loaded, total }: LoadProgress): void;
     dispose(): void;
 }

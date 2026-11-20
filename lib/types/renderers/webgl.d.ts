@@ -22,7 +22,7 @@ export declare class WebGLBookRenderer implements BookRenderer {
     private shift;
     private uvDirection?;
     private readonly cameraLift;
-    constructor(onContextLost: () => void);
+    constructor(onContextLost: () => void, pixelRatio?: number);
     private onLost;
     private lost;
     private texture;

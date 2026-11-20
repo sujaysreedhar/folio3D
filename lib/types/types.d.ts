@@ -1,7 +1,7 @@
 export type PageMode = 'auto' | 'single' | 'double';
 export type ResolvedPageMode = Exclude<PageMode, 'auto'>;
 export type RendererMode = 'auto' | 'webgl' | 'flat';
-export type Theme = 'classic' | 'modern' | 'sepia' | 'midnight' | 'ocean' | 'forest' | 'slate' | 'high-contrast';
+export type Theme = 'atelier' | 'classic' | 'modern' | 'sepia' | 'midnight' | 'ocean' | 'forest' | 'slate' | 'high-contrast';
 export interface ThemeTokens {
     ink: string;
     paper: string;
@@ -27,6 +27,11 @@ export type Source = {
         alt?: string;
     }>;
 };
+export interface LoadProgress {
+    loaded: number;
+    /** Omitted when the server does not provide a trustworthy total size. */
+    total?: number;
+}
 export interface FlipbookOptions {
     source: Source;
     renderer?: RendererMode;
@@ -34,6 +39,8 @@ export interface FlipbookOptions {
     initialPage?: number;
     assetBaseUrl?: string;
     memoryBudgetMB?: number;
+    /** Maximum raster and WebGL pixel ratio; defaults to an adaptive cap of 1.5 or 2. */
+    maxPixelRatio?: number;
     duration?: number;
     sound?: boolean;
     label?: string;
@@ -62,6 +69,7 @@ export interface FlipbookEvents {
     soundchange: FlipbookState;
     themechange: FlipbookState;
     bookmarkchange: number[];
+    loadprogress: LoadProgress;
     error: Error;
 }
 export interface Flipbook {

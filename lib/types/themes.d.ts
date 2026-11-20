@@ -1,4 +1,5 @@
 import type { Theme, ThemeTokens } from './types';
+export declare const defaultTheme: Theme;
 export declare const themeNames: readonly Theme[];
 export declare function validateTheme(theme: Theme): void;
 export declare function normalizeThemeOverrides(overrides: Partial<ThemeTokens>): Partial<ThemeTokens>;

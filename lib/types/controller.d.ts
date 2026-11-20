@@ -7,6 +7,7 @@ export declare class FlipbookController implements Flipbook {
     private readonly ui;
     private readonly observer;
     private readonly sound;
+    private readonly performance;
     private readonly navigation;
     private bookmarks?;
     private contentsPromise?;

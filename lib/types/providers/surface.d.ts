@@ -7,3 +7,5 @@ export declare function contain(source: PageSize, target: PageSize): {
     height: number;
 };
 export declare function checkAbort(signal: AbortSignal): void;
+/** Stop waiting for work that cannot itself be cancelled, such as Blob.arrayBuffer(). */
+export declare function abortable<T>(operation: Promise<T>, signal: AbortSignal): Promise<T>;

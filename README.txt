@@ -12,7 +12,7 @@ Turn PDFs and images into interactive 3D flipbooks for catalogs, magazines, port
 - Inline viewers and modal lightboxes, with keyboard and pointer navigation.
 - Optional page-turn sound with a mute control in the reader toolbar.
 - Page thumbnails, nested PDF/custom contents, and bookmarks with optional browser persistence.
-- Eight themes: Classic, Modern, Sepia, Midnight, Ocean, Forest, Slate and High Contrast. Switch themes or apply custom colors/fonts without reopening the book.
+- Readers open in Atelier, with a marbled paper backdrop and ivory controls. Switch among nine presets or apply custom colors and fonts while reading.
 - Browser-only document processing. Local files stay on your device; no backend, account or upload is required.
 - Plain HTML and npm/bundler integration, with self-hosted PDF workers and support assets.
 
@@ -40,13 +40,15 @@ All sample artwork is original and included in the repository. Demo interactions
 
 ## Run locally
 
-Clone or download this repository, open a terminal in its root directory, and use **Node.js 22.13+** and **npm**:
+Clone or download this repository, open a terminal in its root directory, and use **Node.js 24** (the CI version; minimum 22.13) and **npm**. No backend, database, API key or account is required:
 
 ```sh
 npm ci
 npm run build
 npm run dev
 ```
+
+Use `npm ci` to install the versions in `package-lock.json`. The first build creates the library, declarations and PDF worker/support assets consumed by the demo. Starting Vite before building can produce missing-package or missing-asset errors.
 
 Open the URL printed by Vite (normally `http://127.0.0.1:5173`). The main playground and all three demo apps are available from the homepage. The demo consumes the built package, so run `npm run build` again after changing library code. Vite reloads changes to the demo's HTML, TypeScript and CSS automatically.
 
@@ -176,19 +178,20 @@ Caller-owned byte arrays are copied before PDF.js receives them. URLs follow nor
 | `renderer`       | `auto`                 | `auto`, `webgl`, `flat`; unavailable/lost WebGL falls back to flat                        |
 | `pageMode`       | `auto`                 | `auto`, `single`, `double`; auto switches below 720 container pixels                      |
 | `initialPage`    | `1`                    | One-based starting page                                                                   |
-| `assetBaseUrl`   | Distribution-relative  | Directory containing worker, cmaps, standard_fonts, wasm                                  |
-| `memoryBudgetMB` | `96`                   | Owned raster/texture allocation budget; minimum 1 MiB                                     |
+| `assetBaseUrl`   | Distribution-relative  | Directory containing worker, cmaps, standard_fonts, wasm and page-turn.wav                |
+| `memoryBudgetMB` | `32` or `96`           | Owned raster/texture allocation budget; minimum 1 MiB                                     |
+| `maxPixelRatio`  | `1.5` or `2`           | Maximum raster/WebGL pixel ratio; accepts 0.5–3                                           |
 | `duration`       | `600`                  | Full page-turn duration in milliseconds; zero is immediate                                |
-| `sound`          | `false`                | Enable synthesized page-turn audio after a user interaction                               |
+| `sound`          | `false`                | Enable the recorded page-turn sound after a user interaction                              |
 | `label`          | `Interactive flipbook` | Accessible region/dialog name                                                             |
-| `theme`          | `classic`              | `classic`, `modern`, `sepia`, `midnight`, `ocean`, `forest`, `slate`, `high-contrast`     |
+| `theme`          | `atelier`              | `atelier`, `classic`, `modern`, `sepia`, `midnight`, `ocean`, `forest`, `slate`, `high-contrast` |
 | `themeOverrides` | `{}`                   | Partial `ThemeTokens`: ink, paper, stage, muted, border, hover, accent, font              |
 | `contents`       | PDF outline or empty   | Nested `{ title, page?, children? }` entries; overrides PDF contents                      |
 | `storageKey`     | unset                  | Unique document/version key for persistent local bookmarks; unset keeps them per instance |
 
-Zoom is clamped to 1×–3×. Texture edges are capped at 2048 pixels and DPR at 2. Pages of different sizes/rotations fit the first page's book dimensions with white letterboxing. Double mode starts blank|1, then 2|3 and 4|5. Blank partners do not change the page count. Single mode moves one page at a time.
+Zoom is clamped to 1×–3×. Texture edges are capped at 2048 pixels; the rendering pixel ratio uses the adaptive cap or your explicit `maxPixelRatio`. Pages of different sizes/rotations fit the first page's book dimensions with white letterboxing. Double mode starts blank|1, then 2|3 and 4|5. Blank partners do not change the page count. Single mode moves one page at a time.
 
-Sound uses Web Audio without downloaded audio files. Set `sound: true` to enable it initially. Cancelled drags, boundary navigation and changes within the same spread are silent. Unsupported or blocked audio leaves navigation usable. The main playground enables sound after interaction; the library default is silent.
+Sound uses the bundled `assets/page-turn.wav` recording through Web Audio. Set `sound: true` to enable it initially. The clip loads after an interaction with sound enabled, then its decoded buffer is reused for later turns. Keep it with the other distribution assets, or serve it from your configured `assetBaseUrl`; allow that location in your CSP `connect-src` policy. Cancelled drags, boundary navigation and changes within the same spread are silent. Missing or blocked audio leaves navigation usable. The main playground enables sound after interaction; the library default is silent.
 
 ## Handle and events
 
@@ -196,10 +199,11 @@ Sound uses Web Audio without downloaded audio files. Set `sound: true` to enable
 - `next()`, `previous()`, `goToPage(page)` navigate. Await `ready` before page-range-dependent operations. Calls during initialization wait; during a turn, the latest pending target wins. Boundaries do nothing; invalid pages throw `RangeError` after count is known. Direct nonadjacent jumps are immediate after loading.
 - `setZoom(scale)`, `resetZoom()` change the view. Turns reset zoom; zoom requested during a turn applies after settlement. Dragging pans while zoomed; dragging a page turns it at fit. Short drags reverse; edge taps also navigate.
 - `setSound(enabled)` enables or mutes the page-turn sound. The toolbar also provides a sound toggle; browser audio permissions require a user interaction before playback.
-- `setTheme(theme)` switches the reader and lightbox appearance. Additional preset IDs are `ocean`, `forest`, `slate`, and `high-contrast`. Custom overrides persist when switching presets. Theme colors do not recolor document pages; see [theme tokens](docs/THEMES.md).
+- `setTheme(theme)` switches the reader and lightbox appearance. Use `classic` for the previous default. Custom overrides persist across theme changes. See [theme tokens](docs/THEMES.md).
 - `setThemeOverrides(overrides)` replaces the custom token map; `{}` restores host CSS and the current preset. The same tokens apply to the lightbox header. Unknown tokens and invalid CSS values throw before changing the current theme.
 - `getContents()` resolves nested contents after `ready`. PDF named and explicit internal destinations are resolved to one-based pages; external or invalid destinations remain labels. Contents trees are limited to 33 levels. A failed contents lookup can be retried.
 - `getBookmarks()` returns a sorted copy. `toggleBookmark(page?)` adds/removes a page (defaults to current); await `ready` first. Active same-key readers synchronize, and other tabs receive browser storage events. Storage failure falls back to session state. Persistence is origin-local, never an upload or cross-device sync. Use a new key when changing a document's page ordering; local demo file uploads use session bookmarks.
+- `on('loadprogress', callback)` reports PDF download bytes as `{ loaded, total? }`. The reader shows a progress bar while loading; the total is omitted when unknown. Download completion can precede parsing and rendering, so await `ready` before navigating.
 - `getState()` returns a snapshot: `page`, `pageCount`, `visiblePages`, `zoom`, `sound`, `theme`, copied `themeOverrides`, resolved `pageMode`, `renderer`, and `status` (`loading`, `ready`, `turning`, `error`, `destroyed`).
 - `on('pagechange' | 'zoomchange' | 'rendererchange' | 'soundchange' | 'themechange', callback)` delivers state snapshots. `on('bookmarkchange', callback)` delivers sorted page numbers; `on('error', callback)` delivers an `Error`. All return an unsubscribe function. Initial state is available via `ready`/`getState()`.
 - `destroy()` is idempotent. It aborts loading/render work, terminates owned PDF workers, disconnects observers/listeners, cancels animation/timers, closes audio, releases textures/canvases/URLs and removes the viewer. Destroy during loading rejects `ready` with `AbortError`.
@@ -220,13 +224,36 @@ Below 720 reader pixels, the toolbar keeps navigation visible and puts zoom, fit
 
 Serve cross-origin PDFs/images with appropriate CORS response headers. PDF.js can use HTTP range requests when the source server permits them; otherwise it may download the entire PDF. No proxy is included. A CSP must permit your module scripts, source fetches, same-origin module workers and the image Blob URLs used for decoding; image decoding needs `img-src blob:`. Some PDF encoders use WebAssembly decoders; permit those according to your CSP deployment policy.
 
-The 96 MiB budget conservatively accounts for owned canvas pixels plus matching GPU texture capacity, including reserved in-flight surfaces. It does **not** bound the source file, browser decoder buffers, PDF.js internals, driver overhead, geometry/shadow maps, or total tab memory. Up to 0.88 MiB (at most one eighth of the configured budget) is reserved for six thumbnails, capped at 120×160 each and scaled down for small budgets. Closing/changing the navigation view releases its canvases. At most two reader raster tasks and one serialized thumbnail task run concurrently. Visible reader pages have priority, adjacent pages prefetch; unneeded cached pages are evicted. Displayed surfaces stay protected until a replacement succeeds. Lower budgets/resolution limits can reduce visual sharpness. No rendering loop runs while the book is idle.
+The raster/texture budget defaults to 32 MiB on devices reporting at most 4 GiB of memory or at most four logical processors, and 96 MiB otherwise. The pixel-ratio cap similarly defaults to 1.5 or 2. Set `memoryBudgetMB` and `maxPixelRatio` explicitly to override these hints; the latter is also limited by the device pixel ratio. A cap of 1.5 instead of 2 allocates about 44% fewer pixels at the same CSS size, with a sharpness tradeoff. These limits do not guarantee a particular frame rate. The budget conservatively accounts for owned canvas pixels plus matching GPU texture capacity, including reserved in-flight surfaces. It does **not** bound the source file, browser decoder buffers, PDF.js internals, driver overhead, geometry/shadow maps, or total tab memory. Up to 0.88 MiB (at most one eighth of the configured budget) is reserved for six thumbnails, capped at 120×160 each and scaled down for small budgets. Closing/changing the navigation view releases its canvases. At most two reader raster tasks and one serialized thumbnail task run concurrently. Visible reader pages have priority; adjacent pages prefetch unless the browser reports data-saving mode; unneeded cached pages are evicted. Displayed surfaces stay protected until a replacement succeeds. Lower budgets/resolution limits can reduce visual sharpness. No rendering loop runs while the book is idle.
 
 Target modern Chrome/Edge, Firefox and Safari with ES modules, Pointer Events and ResizeObserver. WebGL2 provides 3D; flat mode still supports navigation/zoom. Fullscreen appears only when supported. Playwright WebKit is an engine check, not proof of real iOS device behavior. See [the verification report](docs/VERIFICATION.md) for tested versions, results and remaining limitations.
 
 Not included in v0.2: search, selectable PDF text, interactive annotations, password-protected PDFs, RTL, hard covers, autoplay, framework/WordPress wrappers or DearFlip compatibility. Page curl is deterministic geometry, not a paper physics simulation.
 
 ## Develop and verify
+
+For routine changes, run the following from the repository root, in this order:
+
+```sh
+npm ci
+npm run build          # required before typecheck: the demo imports the built package
+npm run typecheck
+npm test
+npm run build:demo
+```
+
+The browser suites add desktop and touch coverage in Chromium, Firefox and WebKit. On Ubuntu, install the matching browsers **and system dependencies** before running them:
+
+```sh
+npx playwright install --with-deps chromium firefox webkit
+npm run test:browser
+npm run test:demos
+npm run test:package
+```
+
+The Linux test wrapper starts Xvfb for software WebGL. System-dependency installation may require administrator access. Browser downloads require access to Playwright's download hosts in addition to the npm registry. `test:package` builds real consumers of the packed library; it also needs the preceding library and demo builds. These checks do not publish anything.
+
+Regenerating fixtures and preparing release archives are separate maintainer tasks; neither is required to start development:
 
 ```sh
 npm run fixtures       # regenerate original SVG/PDF fixtures
@@ -240,6 +267,25 @@ npm run test:demos     # test the built demo apps in desktop and mobile browser 
 npm run test:package
 npm run release
 ```
+
+### Recover from document loading errors
+
+The homepage shows **Retry** when a publication fails to load. It retries the same file or URL without reloading the site, and keeps your sound preference. Choose another PDF if the file is damaged, missing or password-protected. PDF loading displays a percentage when the total size is known and downloaded bytes otherwise.
+
+For an embedded reader, catch `book.ready` and show a retry control in your application. Destroy the failed reader before calling `createFlipbook` again with the same options. For document switching, destroy the current reader before creating the replacement; pending initialization rejects with `AbortError`, and stale progress cannot update the new reader. A local file conversion already in progress may finish internally after cancellation, but it will not create a PDF worker or install a reader.
+
+### Troubleshooting builds and browser checks
+
+| Symptom                                              | What to check                                                                                                                                                                   |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cannot resolve `folio3d`, declarations or PDF assets | Run `npm run build` before type checking, starting the demo or building the site. Rebuild after changing library code.                                                          |
+| Browser executable missing or `xvfb-run` missing     | Run the Playwright install command above with `--with-deps`. Use the lockfile-pinned CLI rather than a global Playwright installation.                                          |
+| Linux Firefox cannot create WebGL2                   | Use `npm run test:browser`, which starts the virtual display and checks graphics support, rather than invoking the whole matrix directly.                                       |
+| WebKit reports `Network process crashed`             | Keep the pinned Playwright 1.64.0 and install its matching browsers. Earlier Linux builds had a native network-process crash; see [verification history](docs/VERIFICATION.md). |
+| Packed consumer reports `ENOTCACHED`                 | Allow npm registry access. The package smoke test prefers cached files but may need metadata from the registry.                                                                 |
+| Vite reports chunks larger than 500 kB               | This is an advisory for the lazy PDF/WebGL dependencies. Check the exit status and later CI steps before treating it as a build failure.                                        |
+
+In GitHub Actions, open **Verify Folio3D → verify** and find the first failing step. Library compilation, demo compilation and browser checks are separate stages. Download `verification-evidence` for browser diagnostics; older failed runs remain visible after a fix. See [the verification report](docs/VERIFICATION.md) for the documented CI failures and fixes.
 
 Geometry inspection at `/probe.html` in the development server includes a progress scrubber. It is excluded from the static demo build. Tests save visual frames under `artifacts`; release notes and the persistent milestone ledger live in `docs`.
 
