@@ -28,6 +28,13 @@ const buttons = publication.sections.map((section) => {
   button.type = 'button';
   button.disabled = true;
   button.textContent = section.title;
+  if (isPortfolio) {
+    const pageNumber = document.createElement('span');
+    pageNumber.className = 'index-page';
+    pageNumber.setAttribute('aria-hidden', 'true');
+    pageNumber.textContent = String(section.page).padStart(2, '0');
+    button.append(pageNumber);
+  }
   button.setAttribute('aria-pressed', 'false');
   button.addEventListener('click', () => book.goToPage(section.page));
   shortcuts.append(button);

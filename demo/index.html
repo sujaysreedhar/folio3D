@@ -8,76 +8,92 @@
       name="description"
       content="An open-source 3D flipbook for your PDFs and images. Browser-only, embeddable and yours to build on."
     />
-    <title>Folio3D — A little more dimension</title>
+    <title>Folio3D — Open-source flipbook reader</title>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
     <header class="site-nav">
-      <a class="wordmark" href="#"
-        >folio<span>3D</span><span class="brand-leaf" aria-hidden="true">/</span></a
-      >
+      <a class="wordmark" href="#">Folio<span>3D</span></a>
       <nav aria-label="Main navigation">
         <a href="#demos">Demos</a><a href="#use-it">Documentation</a
         ><a href="./LICENSE.txt">MIT license ↗</a>
       </nav>
     </header>
     <main id="main-content" tabindex="-1">
-      <section class="intro">
-        <p class="eyebrow">An open-source reading experience</p>
-        <h1>Give your pages<br />another dimension.</h1>
-        <p class="intro-copy">
-          Turn PDFs and images into books that invite a little exploration. Beautifully tangible.
-          Entirely in your browser.
-        </p>
-      </section>
-      <section class="playground" aria-label="Try Folio3D">
-        <div class="playground-bar">
-          <div class="tabs" role="group" aria-label="Sample publication">
-            <button id="images" aria-pressed="true">Image book</button
-            ><button id="pdf" aria-pressed="false">Sample PDF</button>
-          </div>
-          <div class="actions">
-            <label class="theme-picker" for="reader-theme"
-              >Theme
-              <select id="reader-theme">
-                <option value="atelier" selected>Atelier</option>
-                <option value="classic">Classic</option>
-                <option value="modern">Modern</option>
-                <option value="sepia">Sepia</option>
-                <option value="midnight">Midnight</option>
-                <option value="ocean">Ocean</option>
-                <option value="forest">Forest</option>
-                <option value="slate">Slate</option>
-                <option value="high-contrast">High Contrast</option>
-              </select>
-            </label>
-            <button id="custom-theme" aria-pressed="false">Custom palette</button>
-            <label class="upload" for="file">Open your PDF <span aria-hidden="true">↗</span></label
-            ><input
-              id="file"
-              class="visually-hidden"
-              type="file"
-              accept="application/pdf,.pdf"
-            /><button id="lightbox" disabled>Open lightbox ↗</button>
-          </div>
-        </div>
-        <div id="book" class="book-mount" aria-busy="true"></div>
-        <div class="book-caption">
-          <p>Drag to turn. Browse pages and contents, or bookmark a place to return to.</p>
-          <span id="publication-status" role="status" aria-atomic="true"
-            >Opening the image book…</span
+      <section class="press-cover" aria-labelledby="cover-title">
+        <div class="cover-copy">
+          <p class="eyebrow">Open-source flipbook reader</p>
+          <h1 id="cover-title">The page,<br />in motion<span>.</span></h1>
+          <p class="cover-description">
+            Turn PDFs and images into interactive flipbooks. Read them in your browser or embed them
+            on your site.
+          </p>
+          <a class="press-button" href="#playground"
+            >Try the reader <span aria-hidden="true">↓</span></a
           >
-          <button id="retry-publication" type="button" hidden>Retry</button>
+        </div>
+        <img
+          class="cover-photo"
+          src="./images/press-hero.webp"
+          alt="An ivory book with its pages fanned across a vermilion backdrop"
+          width="1536"
+          height="1024"
+          fetchpriority="high"
+        />
+      </section>
+      <section id="playground" class="playground" aria-label="Try Folio3D">
+        <div class="section-heading">
+          <h2>Reader playground<span>.</span></h2>
+          <p>Choose a sample or open a PDF from your device. Local files stay in your browser.</p>
+        </div>
+        <div class="reader-frame">
+          <div class="playground-bar">
+            <div class="tabs" role="group" aria-label="Sample publication">
+              <button id="images" aria-pressed="true">Image book</button
+              ><button id="pdf" aria-pressed="false">Sample PDF</button>
+            </div>
+            <div class="actions">
+              <label class="theme-picker" for="reader-theme"
+                >Theme
+                <select id="reader-theme">
+                  <option value="atelier" selected>Atelier</option>
+                  <option value="classic">Classic</option>
+                  <option value="modern">Modern</option>
+                  <option value="sepia">Sepia</option>
+                  <option value="midnight">Midnight</option>
+                  <option value="ocean">Ocean</option>
+                  <option value="forest">Forest</option>
+                  <option value="slate">Slate</option>
+                  <option value="high-contrast">High Contrast</option>
+                </select>
+              </label>
+              <button id="custom-theme" aria-pressed="false">Custom palette</button>
+              <label class="upload" for="file"
+                >Open your PDF <span aria-hidden="true">↗</span></label
+              ><input
+                id="file"
+                class="visually-hidden"
+                type="file"
+                accept="application/pdf,.pdf"
+              /><button id="lightbox" disabled>Open lightbox ↗</button>
+            </div>
+          </div>
+          <div id="book" class="book-mount" aria-busy="true"></div>
+          <div class="book-caption">
+            <p>Drag to turn. Browse pages and contents, or bookmark a place to return to.</p>
+            <span id="publication-status" role="status" aria-atomic="true"
+              >Opening the image book…</span
+            >
+            <button id="retry-publication" type="button" hidden>Retry</button>
+          </div>
         </div>
       </section>
       <section id="demos" class="demo-gallery" aria-labelledby="demos-title">
-        <div class="gallery-heading">
-          <div>
-            <p class="eyebrow">A few ways to make it yours</p>
-            <h2 id="demos-title">Different stories.<br />Same little book.</h2>
-          </div>
+        <div class="section-heading">
+          <h2 id="demos-title">Publications<span>.</span></h2>
           <p>
-            A catalog, a portfolio, a place to read. Explore three small apps built with Folio3D.
+            Explore three ways to publish with Folio3D, from a product catalog to a digital reading
+            room.
           </p>
         </div>
         <div class="demo-cards">
@@ -93,7 +109,7 @@
                 height="800"
                 loading="lazy"
             /></a>
-            <p class="eyebrow">01 / Catalog</p>
+            <p class="eyebrow">Catalog</p>
             <h3>Form &amp; Field</h3>
             <p>Browse a collection of everyday objects with shortcuts to each section.</p>
             <a class="text-link" href="./demos/catalog.html">Explore the catalog ↗</a>
@@ -110,7 +126,7 @@
                 height="800"
                 loading="lazy"
             /></a>
-            <p class="eyebrow">02 / Portfolio</p>
+            <p class="eyebrow">Portfolio</p>
             <h3>Studio North</h3>
             <p>A single-page portfolio of spaces, objects and printed matter.</p>
             <a class="text-link" href="./demos/portfolio.html">Explore the portfolio ↗</a>
@@ -127,7 +143,7 @@
                 height="800"
                 loading="lazy"
             /></a>
-            <p class="eyebrow">03 / Bookshelf</p>
+            <p class="eyebrow">Bookshelf</p>
             <h3>The reading room</h3>
             <p>Choose a publication or bring your own PDF. Settle in and read.</p>
             <a class="text-link" href="./demos/bookshelf.html">Visit the reading room ↗</a>
@@ -136,17 +152,17 @@
       </section>
       <section id="use-it" class="integration">
         <div>
-          <h2>A book, wherever<br />you need one.</h2>
+          <h2>Embed a reader<span>.</span></h2>
           <p>
-            A small API for catalogs, publications and portfolios. Bring your own files, keep your
-            own hosting.
+            Add Folio3D to a page with a stylesheet, an ES module and your publication. The example
+            reflects the theme selected in the playground.
           </p>
-          <a class="text-link" href="./README.txt">Read the complete documentation ↗</a>
-          <p>
+          <div class="doc-links">
+            <a class="text-link" href="./README.txt">Read the documentation ↗</a>
             <a class="text-link" href="https://github.com/sujaysreedhar/folio3D/releases/latest"
               >Download the latest release ↗</a
             >
-          </p>
+          </div>
         </div>
         <div class="code-example">
           <div class="code-heading">
@@ -184,25 +200,14 @@ book.destroy();</code></pre>
           </details>
         </div>
       </section>
-      <section class="principles" aria-label="Made for the open web">
-        <div>
-          <h3>Your files stay yours.</h3>
-          <p>Local PDFs are processed on your device. No upload or account required.</p>
-        </div>
-        <div>
-          <h3>Built for the open web.</h3>
-          <p>Framework-independent JavaScript. Responsive layouts and a flat-page fallback.</p>
-        </div>
-        <div>
-          <h3>Open from the first page.</h3>
-          <p>MIT-licensed original code, with PDF.js and Three.js doing what they do best.</p>
-        </div>
-      </section>
     </main>
     <footer>
-      <a class="wordmark" href="#">folio<span>3D</span></a>
-      <p>Made to be read. Free to be built on.</p>
-      <a href="./LICENSE.txt">Open source · MIT</a>
+      <a class="wordmark" href="#">Folio<span>3D</span></a>
+      <nav aria-label="Footer navigation">
+        <a href="./LICENSE.txt">MIT license</a>
+        <a href="./README.txt">Documentation</a>
+        <a href="https://github.com/sujaysreedhar/folio3D">GitHub ↗</a>
+      </nav>
     </footer>
     <script type="module" src="/main.ts"></script>
   </body>
